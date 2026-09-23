@@ -149,14 +149,23 @@ export const MCP_ADMIN_TOKENS = [
   {
     env: 'STRAPI_MCP_ADMIN_TOKEN',
     name: 'MCP Claude Code (complet)',
-    description: 'Admin token du serveur MCP : lecture, création, modification, publication et suppression des articles.',
+    description:
+      'Admin token du serveur MCP : lecture, création, modification, publication et suppression des articles, et gestion de la médiathèque.',
     actions: ['read', 'create', 'update', 'publish', 'delete'],
+    // Tools media_* de la médiathèque (doc strapi-mcp-server, « Media Library tools ») :
+    // read -> media_list_assets, media_get_asset, media_list_folders ;
+    // assets.create -> media_create_folder ;
+    // assets.update -> media_update_asset, media_move_*, media_rename_folder, et AUSSI
+    // media_delete_assets et media_delete_folder (Strapi rattache la suppression à assets.update).
+    // Le MCP ne sait pas téléverser de nouveau fichier : il référence les médias existants.
+    mediaActions: ['read', 'assets.create', 'assets.update'],
   },
   {
     env: 'STRAPI_MCP_READONLY_TOKEN',
     name: 'MCP lecture seule',
-    description: 'Admin token du serveur MCP : lecture des articles uniquement.',
+    description: 'Admin token du serveur MCP : lecture des articles et de la médiathèque uniquement.',
     actions: ['read'],
+    mediaActions: ['read'],
   },
 ] as const;
 
@@ -191,12 +200,16 @@ async function ensureMcpAdminTokens(strapi: Core.Strapi) {
       strapi.log.warn(`${LOG_PREFIX} ${def.env} absent de .env : Admin token "${def.name}" ignoré`);
       continue;
     }
-    const adminPermissions = def.actions.map((action) => ({
-      action: `plugin::content-manager.explorer.${action}`,
-      subject: 'api::article.article',
-      // Sans `locales`, le MCP refuse le parametre locale ; sans `fields`, tous les champs.
-      properties: { locales: ['fr', 'en'] },
-    }));
+    const adminPermissions: TokenPermission[] = [
+      ...def.actions.map((action) => ({
+        action: `plugin::content-manager.explorer.${action}`,
+        subject: 'api::article.article',
+        // Sans `locales`, le MCP refuse le parametre locale ; sans `fields`, tous les champs.
+        properties: { locales: ['fr', 'en'] },
+      })),
+      // Permissions de plugin sans subject (la validation des Admin tokens refuse un UID ici).
+      ...def.mediaActions.map((action) => ({ action: `plugin::upload.${action}`, subject: null, properties: {} })),
+    ];
     let token = await strapi.db.query('admin::api-token').findOne({
       where: { name: def.name },
       populate: ['adminPermissions'],

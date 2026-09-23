@@ -40,10 +40,48 @@ async function rpc(ctx: CheckContext, token: string | undefined, method: string,
   return { status: res.status, rpc: parseRpc(res.body) };
 }
 
-async function articleTools(ctx: CheckContext, token: string) {
+async function allTools(ctx: CheckContext, token: string) {
   const res = await rpc(ctx, token, 'tools/list');
   const names: string[] = (res.rpc?.result?.tools ?? []).map((t: { name: string }) => t.name);
-  return { status: res.status, names: names.filter((n) => n.includes('article')) };
+  return { status: res.status, names };
+}
+
+async function articleTools(ctx: CheckContext, token: string) {
+  const { status, names } = await allTools(ctx, token);
+  return { status, names: names.filter((n) => n.includes('article')) };
+}
+
+// Tools de la médiathèque (doc strapi-mcp-server, « Media Library tools ») attendus par token.
+const MEDIA_READ_TOOLS = ['media_list_assets', 'media_get_asset', 'media_list_folders'];
+const MEDIA_FULL_TOOLS = [
+  ...MEDIA_READ_TOOLS,
+  'media_update_asset',
+  'media_move_assets',
+  'media_delete_assets',
+  'media_create_folder',
+  'media_rename_folder',
+  'media_move_folder',
+  'media_delete_folder',
+];
+
+// Médias exacts attendus, et aucun tool hors article, médias, editorial_checklist et log
+// (dérive constatée le 23/09 : users et catégories exposés après une modification dans l'admin).
+async function mediaCheck(ctx: CheckContext, token: string, label: string, expected: string[]): Promise<CheckResult> {
+  const { status, names } = await allTools(ctx, token);
+  const media = names.filter((n) => n.startsWith('media_'));
+  const exact = media.length === expected.length && expected.every((n) => media.includes(n));
+  const unexpected = names.filter(
+    (n) => !n.includes('article') && !n.startsWith('media_') && n !== 'editorial_checklist' && n !== 'log',
+  );
+  const ok = status === 200 && exact && unexpected.length === 0;
+  return {
+    ok,
+    message: ok
+      ? `MCP : ${label}, ${media.length} tools médiathèque, aucun tool hors article et médias`
+      : `MCP : ${label} (HTTP ${status}), médias : ${media.join(', ') || 'aucun'} ; tools inattendus : ${
+          unexpected.join(', ') || 'aucun'
+        } (redémarrer Strapi resynchronise les permissions)`,
+  };
 }
 
 const check: CheckFn = async (ctx) => {
@@ -90,6 +128,7 @@ const check: CheckFn = async (ctx) => {
           ? `MCP : Admin token complet, tools/list expose ${names.length} tools article (dont delete_article et publish_article)`
           : `MCP : Admin token complet (HTTP ${status}), tools article manquants : ${missing.join(', ')}`,
     });
+    results.push(await mediaCheck(ctx, full, 'Admin token complet', MEDIA_FULL_TOOLS));
   }
 
   const readonly = ctx.env.STRAPI_MCP_READONLY_TOKEN;
@@ -107,6 +146,7 @@ const check: CheckFn = async (ctx) => {
         ? 'MCP : Admin token lecture seule, seulement list_article et get_article (pas de publish_article)'
         : `MCP : Admin token lecture seule (HTTP ${status}), tools article inattendus : ${names.join(', ') || 'aucun'}`,
     });
+    results.push(await mediaCheck(ctx, readonly, 'Admin token lecture seule', MEDIA_READ_TOOLS));
   }
 
   return results;

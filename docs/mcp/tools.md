@@ -71,6 +71,23 @@ data: {"jsonrpc":"2.0","id":4,"error":{"code":-32602,"message":"Tool publish_art
 data: {"jsonrpc":"2.0","id":5,"error":{"code":-32602,"message":"Tool create_article disabled"}}
 ```
 
+## Médiathèque (ajouté le 23/09)
+
+Les deux Admin tokens portent aussi des permissions `plugin::upload.*` (sans subject), posées et
+resynchronisées au démarrage par `ensureMcpAdminTokens` (`apps/backend/src/index.ts`).
+
+| Token | Permissions | Tools médias exposés |
+|---|---|---|
+| complet | `plugin::upload.read`, `assets.create`, `assets.update` | les 10 : `media_list_assets`, `media_get_asset`, `media_list_folders`, `media_update_asset`, `media_move_assets`, `media_delete_assets`, `media_create_folder`, `media_rename_folder`, `media_move_folder`, `media_delete_folder` |
+| lecture seule | `plugin::upload.read` | `media_list_assets`, `media_get_asset`, `media_list_folders` |
+
+- Le MCP ne téléverse pas de nouveau fichier (limite documentée de Strapi) : il liste et gère les
+  médias existants, et un article peut référencer un asset par son `id` numérique.
+- Vérifié : `media_list_assets` renvoie 13 assets ; `create_article` avec `"cover": 13` crée un
+  brouillon dont la cover est `galerie-3.png` (lu via l'API REST avec `status=draft`).
+- Attention : Strapi rattache `media_delete_assets` et `media_delete_folder` à `assets.update`.
+  Le token complet peut donc supprimer définitivement des médias. `demo:reset` restaure les uploads.
+
 ## Authentification (codes réels)
 
 | Requête | Résultat |

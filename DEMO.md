@@ -85,7 +85,7 @@ npm run demo:check
 
 Sortie réelle obtenue le 23/09 à 11h59 (demo:reset, demo:start, premier cron à 11:59:30), complétée à 14h26
 par les deux lignes « Mode révélateur » de la section PLUGIN. Rejouée à l'identique à 14h52 après le passage en
-monorepo (deux passes de suite, 33/33, seule la ligne du cron varie) :
+monorepo (deux passes de suite, 35/35, seule la ligne du cron varie) :
 
 ```
 Vérification de la démo (Strapi : http://localhost:1337, front : http://localhost:3000)
@@ -116,7 +116,9 @@ Vérification de la démo (Strapi : http://localhost:1337, front : http://localh
   [OK] MCP actif : POST /mcp sans token répond 401 (Authentication required)
   [OK] MCP : token Content API (STRAPI_READ_TOKEN) rejeté par /mcp (HTTP 401, 401 attendu)
   [OK] MCP : Admin token complet, tools/list expose 8 tools article (dont delete_article et publish_article)
+  [OK] MCP : Admin token complet, 10 tools médiathèque, aucun tool hors article et médias
   [OK] MCP : Admin token lecture seule, seulement list_article et get_article (pas de publish_article)
+  [OK] MCP : Admin token lecture seule, 3 tools médiathèque, aucun tool hors article et médias
 == PLUGIN
   [OK] Plugin editorial-toolkit compilé (dist/server et dist/admin présents)
   [OK] Mode révélateur : 6 injection zones dans le build admin (listView.actions, listView.publishModalAdditionalInfos, listView.unpublishModalAdditionalInfos, listView.deleteModalAdditionalInfos, editView.right-links, preview.actions), pas editView.informations
@@ -131,7 +133,7 @@ Vérification de la démo (Strapi : http://localhost:1337, front : http://localh
   [OK] Publication simulée d'un article : HTTP 200, tags revalidés : articles, article:revalidation-a-la-demande
   [OK] entry.update simulé : HTTP 200, ignoré, rien de revalidé
 
-Tout est vert : 33/33 OK
+Tout est vert : 35/35 OK
 ```
 
 Seule la ligne « logs/crons.log écrit il y a N s » varie (le chemin est relatif à `apps/backend/`). Tout autre écart : ne pas commencer, voir la
@@ -335,7 +337,7 @@ Numérotation des slides donnée à titre indicatif : à aligner sur le deck fin
 2. T1 : `npm run demo:reset` (environ 6 s ; refuse si Strapi tourne encore).
 3. T1 : `npm run demo:start` (TUI). T2 n'a pas besoin d'être relancé : `tail -F` suit
    `apps/frontend/logs/front.log`, vidé à chaque démarrage du front ; en cas de doute, le relancer.
-4. Attendre 30 s (premier passage du cron), puis `npm run demo:check` : 33/33.
+4. Attendre 30 s (premier passage du cron), puis `npm run demo:check` : 35/35.
 5. Navigateur : se reconnecter à l'admin (le reset recrée l'admin), recharger les onglets.
 6. T5 : `/clear` dans Claude Code.
 7. Onglet 7 : remettre l'interrupteur **Afficher les injection zones** sur **Masquées** (état voulu au départ
