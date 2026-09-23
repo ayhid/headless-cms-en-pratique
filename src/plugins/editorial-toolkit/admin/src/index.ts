@@ -7,6 +7,7 @@ import type { ContentManagerPlugin } from '@strapi/content-manager/strapi-admin'
 import { PLUGIN_ID, TONE_FIELD_NAME } from '../../shared/constants';
 import { ChecklistPanel } from './components/ChecklistPanel';
 import { Initializer } from './components/Initializer';
+import { injectRevealZones } from './components/InjectionZoneReveal';
 import { ToneFieldIcon } from './components/ToneFieldIcon';
 import { getTranslation } from './utils/getTranslation';
 
@@ -103,6 +104,11 @@ const plugin: StrapiApp['appPlugins'][string] = {
     // Content Manager API (not an injection zone): a panel in the Edit View side area.
     const apis = app.getPlugin('content-manager').apis as ContentManagerPlugin['config']['apis'];
     apis.addEditViewSidePanel([ChecklistPanel]);
+
+    // Injection zones (not a Content Manager API): "mode révélateur", dashed labels that show
+    // where each Content Manager zone is. Off by default, switch on the plugin dashboard.
+    // Why injection zones here, and why not editView.informations: components/InjectionZoneReveal.tsx.
+    injectRevealZones(app);
   },
 
   async registerTrads({ locales }) {

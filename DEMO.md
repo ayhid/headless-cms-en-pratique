@@ -61,7 +61,8 @@ du seed ; lancé avant, la section CRONS affiche 2 KO attendus) :
 npm run demo:check
 ```
 
-Sortie réelle obtenue le 23/09 à 11h59 (demo:reset, demo:start, premier cron à 11:59:30) :
+Sortie réelle obtenue le 23/09 à 11h59 (demo:reset, demo:start, premier cron à 11:59:30), complétée à 14h26
+par les deux lignes « Mode révélateur » de la section PLUGIN :
 
 ```
 Vérification de la démo (Strapi : http://localhost:1337, front : http://localhost:3000)
@@ -95,6 +96,8 @@ Vérification de la démo (Strapi : http://localhost:1337, front : http://localh
   [OK] MCP : Admin token lecture seule, seulement list_article et get_article (pas de publish_article)
 == PLUGIN
   [OK] Plugin editorial-toolkit compilé (dist/server et dist/admin présents)
+  [OK] Mode révélateur : 6 injection zones dans le build admin (listView.actions, listView.publishModalAdditionalInfos, listView.unpublishModalAdditionalInfos, listView.deleteModalAdditionalInfos, editView.right-links, preview.actions), pas editView.informations
+  [OK] Mode révélateur : zones affichées par le Content Manager installé : listView.actions, editView.right-links, preview.actions ; déclarées mais non affichées : listView.publishModalAdditionalInfos, listView.unpublishModalAdditionalInfos, listView.deleteModalAdditionalInfos
   [OK] Plugin chargé : « Boîte à outils éditoriale » listé par GET /admin/plugins
   [OK] Custom field plugin::editorial-toolkit.tone enregistré (type natif string)
   [OK] Article utilise le custom field dans l’attribut « tone »
@@ -105,7 +108,7 @@ Vérification de la démo (Strapi : http://localhost:1337, front : http://localh
   [OK] Publication simulée d'un article : HTTP 200, tags revalidés : articles, article:revalidation-a-la-demande
   [OK] entry.update simulé : HTTP 200, ignoré, rien de revalidé
 
-Tout est vert : 31/31 OK
+Tout est vert : 33/33 OK
 ```
 
 Seule la ligne « logs/crons.log écrit il y a N s » varie. Tout autre écart : ne pas commencer, voir la
@@ -144,6 +147,11 @@ n'est accepté par Chrome que sur `http://localhost`.
 L'identifiant `pjmu3k3t4okswmnvjmwp2683` de l'onglet 3 vient de `data/demo-export.tar` : il est identique
 après chaque `demo:reset` (vérifié sur deux resets). S'il ne s'ouvre pas, passer par l'onglet 2 et cliquer
 sur la ligne « Composer un article bloc par bloc ».
+
+Mode révélateur : dans l'onglet 7, l'interrupteur **Afficher les injection zones** doit être sur
+**Masquées** (état voulu au départ : désactivé). Il est gardé dans le `localStorage` du navigateur : un
+`demo:reset` ne le remet **pas** à zéro, une répétition précédente a pu le laisser activé. Vérifier aussi
+qu'aucune étiquette en pointillés « INJECTION ZONE » n'apparaît dans l'onglet 2. **[à répéter à l'œil]**
 
 Dernier coup d'œil : T2 vide, T3 affiche « Aucun article programmé à publier. » toutes les 30 s, T4 a la
 commande tapée sans l'avoir validée, T5 affiche l'invite de Claude Code.
@@ -215,18 +223,35 @@ Si la seconde 15 d'une minute passe pendant l'attente, T3 affiche aussi le « R�
 en attente » (deuxième tâche cron) : le commenter en une phrase, c'est le rapport qu'on enverrait à la
 rédaction chaque matin.
 
-### Étape 6 : montrer le plugin (4:45 à 5:30), onglet 7
+### Étape 6 : montrer le plugin (4:45 à 6:00), onglets 7, 2 puis 7
 
 | Geste | À dire | Le public voit |
 |---|---|---|
 | Onglet 7 (icône plume, « Boîte à outils éditoriale »), cliquer **Actualiser**. **[à répéter à l'œil]** [vérifié par API : route du tableau de bord OK] | « Un plugin maison, écrit avec les briques officielles : le tableau de bord de la rédaction, ce qui est prêt et ce qui manque. » | Compteurs, tableau par locale, « Brouillons à compléter » : « Brouillon : écrire son propre plugin » avec le badge « DATE DE PARUTION ». |
-| Cliquer **Ouvrir** sur cette ligne. Colonne de droite : **CHECK-LIST DE PUBLICATION** (4 sur 6). | « Dans l'écran d'édition, la même règle devient une check-list. » | Panneau à 4/6, « À COMPLÉTER ». |
-| Champ **tone** : cliquer la pastille **Pédagogique**. **Ne pas enregistrer.** | « Elle se met à jour pendant la saisie, avant d'enregistrer. Et c'est le custom field vu à l'étape 1. » | Le panneau passe à 5/6. |
+| **Mode révélateur (environ 30 s)** : en haut de la page, cliquer l'interrupteur **Afficher les injection zones** (passe de « Masquées » à « Affichées »). **[à répéter à l'œil]** | « Pour étendre l'admin, Strapi offre deux outils. Je vous rends visibles les emplacements du second, les injection zones. » | L'interrupteur sur « Affichées ». |
+| Onglet 2 (liste Article fr), **sans recharger**. **[à répéter à l'œil]** | « Le réglage passe d'un onglet à l'autre en direct, sans recharger ni redémarrer Strapi. » | À droite de la barre de recherche et des filtres, avant l'icône d'engrenage : une étiquette en pointillés « INJECTION ZONE `listView.actions` ». |
+| Revenir à l'onglet 7, cliquer **Ouvrir** sur « Brouillon : écrire son propre plugin ». Colonne de droite, panneau « Entrée ». **[à répéter à l'œil]** | « Ma check-list passe par les Content Manager APIs, c'est ce que la doc recommande pour un panneau ou une action. Les injection zones, elles, servent à viser un emplacement précis que ces API ne couvrent pas, comme ici sous les boutons de publication. » | Sous **Publier** et **Enregistrer** : l'étiquette « INJECTION ZONE `editView.right-links` » avec `props : slug` ; juste en dessous, le panneau **CHECK-LIST DE PUBLICATION** (4 sur 6, « À COMPLÉTER »). |
+| Champ **tone** : cliquer la pastille **Pédagogique**. **Ne pas enregistrer.** | « La check-list se met à jour pendant la saisie, avant d'enregistrer. Et c'est le custom field vu à l'étape 1. » | Le panneau passe à 5/6. |
 
 Ne pas remplir `publishAt` et enregistrer : avec une date passée, le cron publierait le brouillon dans les
 30 s. Laisser cet onglet tel quel (modifications non enregistrées), l'étape suivante utilise l'onglet 2.
+Le mode révélateur reste activé pendant l'étape 7 : l'étiquette `listView.actions` restera visible dans
+l'onglet 2, c'est sans effet sur la démo (le désactiver après, section 4).
 
-### Étape 7 : l'agent MCP écrit un brouillon (5:30 à 7:00), T5 puis onglet 2
+**Pas de geste dans les fenêtres de confirmation.** La doc liste `listView.publishModalAdditionalInfos`,
+`unpublishModalAdditionalInfos` et `deleteModalAdditionalInfos`, et le plugin y injecte bien son étiquette,
+mais le Content Manager 5.54.0 ne les affiche nulle part : ces zones sont déclarées (le plugin i18n les
+utilise aussi) sans qu'aucun écran ne les rende, et la liste n'a pas de bouton « Publier » par ligne
+(publication groupée seulement, fenêtre sans injection zone). Vérifié dans
+`node_modules/@strapi/content-manager/dist/admin` ; `demo:check` le rappelle (« déclarées mais non affichées »).
+Si une question vient là-dessus : « la doc les liste, cette version ne les affiche pas encore, c'est
+exactement pour ça qu'on préfère les API typées ». Même prudence pour `editView.informations`, que la doc
+dit interne : le plugin ne l'utilise pas.
+
+Facultatif, hors minutage : bouton **Aperçu** de l'édition d'article, l'étiquette `preview.actions`
+apparaît dans l'en-tête de l'aperçu. **[à répéter à l'œil]**
+
+### Étape 7 : l'agent MCP écrit un brouillon (6:00 à 7:00), T5 puis onglet 2
 
 | Geste | À dire | Le public voit |
 |---|---|---|
@@ -250,7 +275,11 @@ Statut : brouillon, rien n'a été publié
 Rejouer ce prompt sans `demo:reset` crée un **second** brouillon avec le même slug (vérifié : 2 articles
 `strapi-ia-brouillon-claude` après deux essais, sans erreur). D'où le `demo:reset` entre deux répétitions.
 
-S'il reste du temps (bonus, 20 s) : « Donne-moi la check-list éditoriale de l'article brouillon-plugin-maison,
+Minutage : l'étape 7 passe de 1:30 à 1:00 pour laisser 30 s au mode révélateur de l'étape 6. L'agent
+répond en 10 à 11 s : le temps rogné est la marge d'attente, pas un geste. Si l'agent dépasse 20 s,
+passer au plan B sans attendre.
+
+Hors minutage, seulement s'il reste du temps ou pendant les questions (bonus, 20 s) : « Donne-moi la check-list éditoriale de l'article brouillon-plugin-maison,
 en trois lignes, sans tableau et sans tiret cadratin. » L'agent appelle le tool `editorial_checklist` du plugin.
 **[non répété avec Claude Code : à répéter à l'œil]**
 
@@ -268,7 +297,8 @@ Règle : si un geste rate, on ne débogue pas en direct. On bascule sur le plan 
 | 3. Lire côté front | Front en erreur (encadré rouge « Impossible de charger les articles ») ou page blanche | Dans T4 : `set -a; . ./.env; set +a; curl -s -g "http://localhost:1337/api/articles?locale=fr&filters[slug][\$eq]=composer-un-article-bloc-par-bloc&populate[blocks][populate]=*" -H "Authorization: Bearer $STRAPI_READ_TOKEN" \| head -c 600` : même contenu, en JSON. [vérifié] | Slide 14 : capture de l'article sur le front, à côté de sa réponse JSON |
 | 4. Publier et webhook | T2 reste vide, ou la page ne change pas | Dans T4 : `npm run webhooks:simulate` (3 cas : 200, 401, ignoré ; 0,3 s) [vérifié]. Si le front est en `next dev`, le cache ne se voit pas : l'annoncer et passer à la slide. | Slide 15 : schéma Publier > webhook > revalidateTag, avec la ligne de log `[webhook] entry.publish ...` |
 | 5. Cron | Rien après 4:40 (publication non vue) | Ne pas attendre plus : montrer dans T3 la ligne « Publié : « Publication programmée par un cron » » du démarrage (le seed publié à 30 s), ou relancer `npx tsx scripts/crons/schedule-demo-article.ts 5` et continuer (la publication arrivera pendant l'étape 6). | Slide 16 : capture de `logs/crons.log` avec « Publié : « Parution programmée en direct ... » » |
-| 6. Plugin | Menu plume absent, page en erreur | Dans T4 : `npm run demo:check 2>&1 \| grep -A6 "== PLUGIN"` (plugin chargé, custom field, tableau de bord). | Slide 17 : captures du tableau de bord éditorial et du panneau CHECK-LIST DE PUBLICATION |
+| 6. Plugin | Menu plume absent, page en erreur | Dans T4 : `npm run demo:check 2>&1 \| grep -A8 "== PLUGIN"` (plugin chargé, injection zones du build, custom field, tableau de bord). | Slide 17 : captures du tableau de bord éditorial et du panneau CHECK-LIST DE PUBLICATION |
+| 6. Mode révélateur | Pas d'étiquette après l'interrupteur (onglet chargé avant le build, cache) | Ne pas insister : recharger l'onglet 2 une fois (Cmd + R) ; si rien, passer à la slide, dire la phrase clé et continuer avec la check-list. | Slide 17 bis : tableau « Injection zones vs. Content Manager APIs » de la doc (https://docs.strapi.io/cms/plugins-development/admin-injection-zones), à côté des captures des étiquettes `listView.actions` et `editView.right-links` |
 | 7. MCP | Pas de réseau, agent lent (plus de 30 s), réponse bavarde | Échap dans T5, puis dans T4 : `bash docs/mcp/mcp-curl.sh` (0,3 s, entièrement local) : 401 pour un jeton Content API, tools du jeton complet, brouillon créé, refus de `publish_article` pour le jeton lecture seule. [vérifié] Puis recharger l'onglet 2 : brouillon « brouillon-mcp-curl-HHMMSS ». | Slide 18 : capture du Content Manager avec le brouillon MCP |
 | Tout | Strapi planté, 429 au login, machine figée | Ne pas redémarrer devant le public. Dérouler les slides 12 à 18. | Slides 12 à 18 |
 
@@ -282,9 +312,11 @@ Numérotation des slides donnée à titre indicatif : à aligner sur le deck fin
 2. T1 : `npm run demo:reset` (environ 5 s ; refuse si Strapi tourne encore).
 3. T1 : `npm run demo:start 2>&1 | tee logs/demo-start.log`, relancer T2 (le `tail -f` suit le fichier recréé
    par `tee` ; en cas de doute, le relancer).
-4. Attendre 30 s (premier passage du cron), puis `npm run demo:check` : 31/31.
+4. Attendre 30 s (premier passage du cron), puis `npm run demo:check` : 33/33.
 5. Navigateur : se reconnecter à l'admin (le reset recrée l'admin), recharger les onglets.
 6. T5 : `/clear` dans Claude Code.
+7. Onglet 7 : remettre l'interrupteur **Afficher les injection zones** sur **Masquées** (état voulu au départ
+   de la démo). Le reset ne touche pas au navigateur : sans ce geste, les étiquettes sont déjà là au début.
 
 Pourquoi le reset est obligatoire : sans lui, la citation Hugo Lambert est déjà là (étape 2), le brouillon
 MCP existe déjà et le prompt en crée un doublon de slug (étape 7), l'article programmé de la répétition
@@ -328,4 +360,8 @@ précédente encombre la liste, et le ton choisi à l'étape 6 peut avoir été 
 4. **Slide 15** : schéma « Publier > webhook signé > /api/revalidate > revalidateTag(articles, article:slug) » et la ligne de log T2.
 5. **Slide 16** : T3 avec `Publié : « Parution programmée en direct (HH:MM:SS) » (fr)` et la liste du front où l'article apparaît.
 6. **Slide 17** : tableau de bord « Boîte à outils éditoriale » et panneau CHECK-LIST DE PUBLICATION (4/6 puis 5/6), carte « Ton éditorial » dans l'onglet Personnalisé.
+6 bis. **Slide 17 bis** : le tableau « Injection zones vs. Content Manager APIs » de la doc (copie, sans la
+   retoucher), et deux captures mode révélateur activé : liste Article avec l'étiquette `listView.actions` près
+   des filtres, édition de « Brouillon : écrire son propre plugin » avec `editView.right-links` sous les boutons
+   et la CHECK-LIST DE PUBLICATION juste dessous. Faire ces captures en thème clair, puis désactiver l'interrupteur.
 7. **Slide 18** : T5 avec la réponse de l'agent, et le Content Manager avec « Strapi et l'IA : un brouillon écrit par Claude » en Brouillon.

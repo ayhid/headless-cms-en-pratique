@@ -51,5 +51,12 @@
   "table.noTone": "Not set",
   "tones.title": "Editorial tones",
   "tones.subtitle": "Custom field \"{field}\" of the article, all draft versions.",
-  "tones.missing": "The \"Editorial tone\" custom field is not used by Article yet. Add it from the Content-Type Builder, Custom tab."
+  "tones.missing": "The \"Editorial tone\" custom field is not used by Article yet. Add it from the Content-Type Builder, Custom tab.",
+  "reveal.label": "Show injection zones",
+  "reveal.hint": "Shows a dashed label wherever a plugin can inject a component in the Content Manager (list, confirmation dialogs, edit view, preview). Saved in this browser and applied right away in every tab.",
+  "reveal.on": "Shown",
+  "reveal.off": "Hidden",
+  "reveal.label.badge": "Injection zone",
+  "reveal.label.title": "Component injected by the Editorial toolkit plugin in the {area} zone",
+  "reveal.label.props": "props: {names}"
 }

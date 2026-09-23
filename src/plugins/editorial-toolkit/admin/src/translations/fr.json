@@ -51,5 +51,12 @@
   "table.noTone": "Non renseigné",
   "tones.title": "Répartition des tons éditoriaux",
   "tones.subtitle": "Champ personnalisé « {field} » de l’article, toutes versions brouillon.",
-  "tones.missing": "Le champ personnalisé « Ton éditorial » n’est pas encore utilisé par Article. Ajoutez-le depuis le Content-Type Builder, onglet Personnalisé."
+  "tones.missing": "Le champ personnalisé « Ton éditorial » n’est pas encore utilisé par Article. Ajoutez-le depuis le Content-Type Builder, onglet Personnalisé.",
+  "reveal.label": "Afficher les injection zones",
+  "reveal.hint": "Affiche une étiquette en pointillés à chaque emplacement du Content Manager où un plugin peut injecter un composant (liste, fenêtres de confirmation, édition, aperçu). Réglage mémorisé dans ce navigateur, appliqué tout de suite dans tous les onglets.",
+  "reveal.on": "Affichées",
+  "reveal.off": "Masquées",
+  "reveal.label.badge": "Injection zone",
+  "reveal.label.title": "Composant injecté par le plugin Boîte à outils éditoriale dans la zone {area}",
+  "reveal.label.props": "props : {names}"
 }

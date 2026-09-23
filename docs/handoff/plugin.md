@@ -34,6 +34,33 @@ Aucun fichier du SOCLE n’est modifié par ce commit : tout ce qui touche `pack
 Les règles de la check-list sont écrites une seule fois (`shared/checklist.ts`) et utilisées par
 le panneau, le tableau de bord et le tool MCP : l’écran, l’API et l’agent donnent le même verdict.
 
+## Mode révélateur des injection zones
+
+Ajouté après coup pour le talk. Interrupteur **Afficher les injection zones** en haut du tableau de bord
+du plugin ; actif, il affiche une étiquette en pointillés « INJECTION ZONE » + nom technique (police mono)
+à chaque injection zone du Content Manager. Inactif (défaut) : les composants injectés rendent `null`.
+
+- Code : `admin/src/components/InjectionZoneReveal.tsx` (zones, étiquette, commentaire d’en-tête :
+  Content Manager APIs pour la check-list, injection zones pour viser un emplacement précis),
+  `admin/src/utils/revealMode.ts` (état), `admin/src/pages/DashboardPage.tsx` (interrupteur).
+- Zones injectées dans `bootstrap(app)` : `listView.actions`, `listView.publishModalAdditionalInfos`,
+  `listView.unpublishModalAdditionalInfos`, `listView.deleteModalAdditionalInfos`,
+  `editView.right-links`, `preview.actions`. Pas `editView.informations` (interne selon la doc).
+- **Limite constatée en 5.54.0** : seules `listView.actions` (aucune prop), `editView.right-links`
+  (prop `slug`) et `preview.actions` (aucune prop) sont rendues. Les trois zones de fenêtre de confirmation
+  sont déclarées mais aucun écran ne les affiche : l’étiquette n’y apparaît pas. Détail et sources dans
+  `docs/plugin/choix-extension.md`, section « Mode révélateur ».
+- État : `localStorage["editorial-toolkit:reveal-injection-zones"]`, lu dans un `try/catch`, synchronisé
+  entre onglets (`storage`) et dans l’onglet (événement personnalisé). `demo:reset` ne le remet pas à zéro
+  (il vit dans le navigateur) : le désactiver à la main avant la démo (checklist de `DEMO.md`).
+- Contrôle `demo:check` (section PLUGIN) : les 6 noms de zones sont dans `dist/admin`, avec
+  `injectComponent(`, et `editView.informations` n’y est pas ; ligne d’information sur les zones que le
+  Content Manager installé affiche réellement.
+- Vérifié sans navigateur : rendu serveur des composants (React + design system) avec un `localStorage`
+  simulé : rien quand le mode est inactif, étiquette `editView.right-links` avec `props : slug` quand il est
+  actif, clé supprimée à la désactivation. **Rendu visuel à vérifier à l’œil** (liste dans `DEMO.md`,
+  étape 6) : pas de connexion à l’admin dans un navigateur automatisé pour ce lot.
+
 ## Bonus MCP : pourquoi il est retenu
 
 La page https://docs.strapi.io/cms/plugins-development/extend-mcp-server ne porte aucune mention

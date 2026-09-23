@@ -3,8 +3,10 @@
 // - plugin listé par GET /admin/plugins ;
 // - custom field "Ton éditorial" enregistré côté serveur (type natif string) et utilisé par Article ;
 // - route du tableau de bord GET /editorial-toolkit/dashboard ;
+// - mode révélateur : le build admin (dist/admin) injecte bien les 6 injection zones attendues
+//   (et pas editView.informations, zone interne), et quelles zones le Content Manager installé affiche ;
 // - tool MCP editorial_checklist listé par tools/list (seulement si le serveur MCP est activé).
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { CheckContext, CheckFn, CheckResult } from './types';
 
@@ -22,6 +24,64 @@ async function checkBuild(ctx: CheckContext): Promise<CheckResult> {
         ? `Plugin ${PLUGIN} compilé (dist/server et dist/admin présents)`
         : `Plugin ${PLUGIN} non compilé (manque ${missing.join(', ')}) : lancer npm run plugin:build`,
   };
+}
+
+/** Zones du mode révélateur (admin/src/components/InjectionZoneReveal.tsx). */
+const REVEALED_ZONES = [
+  'listView.actions',
+  'listView.publishModalAdditionalInfos',
+  'listView.unpublishModalAdditionalInfos',
+  'listView.deleteModalAdditionalInfos',
+  'editView.right-links',
+  'preview.actions',
+];
+
+async function checkRevealZones(ctx: CheckContext): Promise<CheckResult[]> {
+  const dir = join(ctx.root, 'src', 'plugins', PLUGIN, 'dist', 'admin');
+  if (!existsSync(dir)) {
+    return [{ ok: false, message: `Mode révélateur : dist/admin absent, lancer npm run plugin:build` }];
+  }
+  const bundle = readdirSync(dir)
+    .filter((file) => file.endsWith('.mjs'))
+    .map((file) => readFileSync(join(dir, file), 'utf8'))
+    .join('\n');
+  // Le bundle écrit les chaînes entre guillemets doubles ; un commentaire ne compte pas.
+  const missing = REVEALED_ZONES.filter((zone) => !bundle.includes(`"${zone}"`));
+  const hasInject = bundle.includes('injectComponent(');
+  const internal = bundle.includes('"editView.informations"');
+  const results: CheckResult[] = [
+    {
+      ok: hasInject && missing.length === 0 && !internal,
+      message: !hasInject
+        ? `Mode révélateur : aucun appel à injectComponent dans dist/admin (relancer npm run plugin:build)`
+        : missing.length > 0
+          ? `Mode révélateur : zone(s) absente(s) du build admin : ${missing.join(', ')}`
+          : internal
+            ? `Mode révélateur : editView.informations (zone interne) ne doit pas être injectée`
+            : `Mode révélateur : ${REVEALED_ZONES.length} injection zones dans le build admin (${REVEALED_ZONES.join(', ')}), pas editView.informations`,
+    },
+  ];
+
+  // Information : zones réellement affichées par le Content Manager installé (<InjectionZone area="...">).
+  const cmDir = join(ctx.root, 'node_modules', '@strapi', 'content-manager', 'dist', 'admin');
+  const cmFiles = [
+    'pages/ListView/ListViewPage.mjs',
+    'pages/EditView/components/Panels.mjs',
+    'preview/components/PreviewHeader.mjs',
+    'pages/ListView/components/BulkActions/Actions.mjs',
+  ].map((file) => join(cmDir, file));
+  if (cmFiles.every((file) => existsSync(file))) {
+    const cm = cmFiles.map((file) => readFileSync(file, 'utf8')).join('\n');
+    const rendered = REVEALED_ZONES.filter((zone) => cm.includes(`area: "${zone}"`));
+    const notRendered = REVEALED_ZONES.filter((zone) => !rendered.includes(zone));
+    results.push({
+      ok: rendered.length > 0,
+      message:
+        `Mode révélateur : zones affichées par le Content Manager installé : ${rendered.join(', ') || 'aucune'}` +
+        (notRendered.length ? ` ; déclarées mais non affichées : ${notRendered.join(', ')}` : ''),
+    });
+  }
+  return results;
 }
 
 async function checkListed(ctx: CheckContext, jwt: string): Promise<CheckResult> {
@@ -136,7 +196,7 @@ async function checkMcpTool(ctx: CheckContext, jwt: string): Promise<CheckResult
 }
 
 const check: CheckFn = async (ctx) => {
-  const results: CheckResult[] = [await checkBuild(ctx)];
+  const results: CheckResult[] = [await checkBuild(ctx), ...(await checkRevealZones(ctx))];
   const jwt = await ctx.adminJwt();
   results.push(await checkListed(ctx, jwt));
   results.push(...(await checkCustomField(ctx, jwt)));

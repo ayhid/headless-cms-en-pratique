@@ -5,6 +5,7 @@ import {
   Box,
   Button,
   EmptyStateLayout,
+  Field,
   Flex,
   Grid,
   LinkButton,
@@ -14,6 +15,7 @@ import {
   Td,
   Th,
   Thead,
+  Toggle,
   Tr,
   Typography,
 } from '@strapi/design-system';
@@ -25,6 +27,7 @@ import { Link } from 'react-router-dom';
 import { ARTICLE_UID, PLUGIN_ID } from '../../../shared/constants';
 import type { ChecklistResult } from '../../../shared/checklist';
 import { getTranslation } from '../utils/getTranslation';
+import { useRevealMode } from '../utils/revealMode';
 
 type DocStatus = 'published' | 'draft' | 'modified';
 
@@ -139,6 +142,42 @@ const OpenButton = ({ doc }: { doc: ArticleSummary }) => {
   );
 };
 
+/**
+ * "Mode révélateur" switch: shows the dashed labels injected in the Content Manager
+ * injection zones (components/InjectionZoneReveal.tsx). Stored in localStorage, live.
+ */
+const RevealModeCard = () => {
+  const { formatMessage } = useIntl();
+  const [enabled, setEnabled] = useRevealMode();
+  const t = (id: string, defaultMessage: string) => formatMessage({ id: getTranslation(id), defaultMessage });
+
+  return (
+    <Box background="neutral0" hasRadius shadow="tableShadow" padding={6}>
+      <Field.Root
+        name="reveal-injection-zones"
+        id="editorial-toolkit-reveal-injection-zones"
+        hint={t(
+          'reveal.hint',
+          'Affiche une étiquette en pointillés à chaque emplacement du Content Manager où un plugin peut injecter un composant (liste, fenêtres de confirmation, édition, aperçu). Réglage mémorisé dans ce navigateur, appliqué tout de suite dans tous les onglets.'
+        )}
+      >
+        <Flex direction="column" alignItems="stretch" gap={2}>
+          <Field.Label>{t('reveal.label', 'Afficher les injection zones')}</Field.Label>
+          <Box maxWidth="32rem">
+            <Toggle
+              checked={enabled}
+              onLabel={t('reveal.on', 'Affichées')}
+              offLabel={t('reveal.off', 'Masquées')}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) => setEnabled(event.target.checked)}
+            />
+          </Box>
+          <Field.Hint />
+        </Flex>
+      </Field.Root>
+    </Box>
+  );
+};
+
 const DashboardPage = () => {
   const { formatMessage, formatDate } = useIntl();
   const { get } = useFetchClient();
@@ -192,6 +231,7 @@ const DashboardPage = () => {
       />
       <Layouts.Content>
         <Flex direction="column" alignItems="stretch" gap={8}>
+          <RevealModeCard />
           <Grid.Root gap={4}>
             <Grid.Item col={3} s={6} xs={12}>
               <KpiCard icon={Feather} color="primary" value={data.totals.total} label={t('kpi.total', 'Articles (toutes locales)')} />
