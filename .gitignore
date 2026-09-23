@@ -158,3 +158,6 @@ export_*.log
 
 # Worktrees des agents de phase 2 (git worktree, jamais versionnés)
 .claude/worktrees/
+
+# Plugin Documentation : spec OpenAPI et page Swagger régénérées à chaque démarrage
+apps/backend/src/extensions/documentation/

@@ -501,3 +501,20 @@ La base a été remise à zéro après ces tests (`npm run demo:reset`), les por
   tableau de bord du plugin), admin en français.
 - Thème clair de l'admin et du front au projecteur ; rendu du plugin (tableau de bord, badges) en résolution
   de projecteur (1280 x 720 ou 1920 x 1080).
+
+## Plugins GraphQL et Documentation (ajoutés le 23/09)
+
+- `@strapi/plugin-graphql` et `@strapi/plugin-documentation` en 5.54.0 exact (workspace backend),
+  configurés dans `apps/backend/config/plugins.ts`. React reste en 18.3.1 côté admin (vérifié).
+- **GraphQL** : `POST http://localhost:1337/graphql`, `depthLimit: 7`, `defaultLimit: 25`, `maxLimit: 100`.
+  Vérifié : la requête `articles(locale: "fr")` avec `STRAPI_READ_TOKEN` renvoie titres, cover et auteur ;
+  sans token ou pour une mutation avec ce token, réponse `Forbidden access`. La sandbox Apollo
+  (`GET /graphql` dans un navigateur) se charge depuis les CDN d'Apollo et Google Fonts :
+  **elle exige Internet**. Hors ligne, montrer la requête en curl.
+- **Documentation** : Swagger UI sur `http://localhost:1337/documentation/v1.0.0`, entrée
+  « Documentation » dans le menu de l'admin. Ses fichiers statiques sont servis par Strapi
+  (fonctionne hors ligne). La doc Strapi marque ce plugin « Unmaintained, may not work with Strapi 5 » :
+  en 5.54.0 il démarre sans erreur et génère une spec OpenAPI 3.0.0 de 10 chemins, mais les
+  paramètres des chemins s'appellent encore `{id}` et non `documentId`. Ne pas le présenter comme
+  la référence : le CLI `strapi openapi generate` (doc cms/api/openapi) est l'outil maintenu.
+- Les fichiers régénérés à chaque démarrage (`apps/backend/src/extensions/documentation/`) sont ignorés par git.
