@@ -1,19 +1,25 @@
 # Handoff CRONS (phase 2)
 
+> **Monorepo Turborepo (23/09)** : Strapi vit désormais dans `apps/backend/` et le front dans `apps/frontend/`.
+> Les chemins de ce document ont été réécrits en conséquence ; un `.env` sans préfixe désigne `apps/backend/.env`.
+> Les commandes `npm run ...` se lancent depuis la racine du dépôt ; les extraits de `package.json` cités plus bas
+> sont ceux de `apps/backend/package.json`. `scripts/demo-start.mts` n'existe plus : `npm run demo:start` passe par
+> turbo. Détails : `docs/handoff/socle.md`, section « Monorepo Turborepo ».
+
 Deux tâches cron Strapi, au format objet `{ task, options: { rule, tz } }` de la doc
 (https://docs.strapi.io/cms/configurations/cron), tout en Document Service (ni SQL ni Query Engine).
 
 | Fichier | Rôle |
 |---|---|
-| `config/cron-tasks.ts` | Déclaration des 2 tâches et des règles (mode démo / réaliste) |
-| `src/crons/publish-scheduled.ts` | Publication programmée |
-| `src/crons/drafts-digest.ts` | Récapitulatif des brouillons en attente |
-| `src/crons/log.ts` | Console + `logs/crons.log`, dates en français (Europe/Paris), liste des locales |
-| `scripts/crons/schedule-demo-article.ts` | Prépare le brouillon programmé du talk en une commande |
-| `scripts/checks/crons.ts` | 3 contrôles pour `demo:check` |
-| `docs/handoff/config-requests/crons.md` | `cron: { enabled: true, tasks: cronTasks }` dans `config/server.ts` |
+| `apps/backend/config/cron-tasks.ts` | Déclaration des 2 tâches et des règles (mode démo / réaliste) |
+| `apps/backend/src/crons/publish-scheduled.ts` | Publication programmée |
+| `apps/backend/src/crons/drafts-digest.ts` | Récapitulatif des brouillons en attente |
+| `apps/backend/src/crons/log.ts` | Console + `apps/backend/logs/crons.log`, dates en français (Europe/Paris), liste des locales |
+| `apps/backend/scripts/crons/schedule-demo-article.ts` | Prépare le brouillon programmé du talk en une commande |
+| `apps/backend/scripts/checks/crons.ts` | 3 contrôles pour `demo:check` |
+| `docs/handoff/config-requests/crons.md` | `cron: { enabled: true, tasks: cronTasks }` dans `apps/backend/config/server.ts` |
 
-**À appliquer par le SOCLE** : la config request (un import + 4 lignes dans `config/server.ts`).
+**À appliquer par le SOCLE** : la config request (un import + 4 lignes dans `apps/backend/config/server.ts`).
 Rien à changer dans `.gitignore` (`logs` et `*.log` y sont déjà) ni dans `.env.example` (`DEMO_MODE` y est).
 
 ## Ce qui marche (vérifié sur le port 1340)
@@ -30,7 +36,7 @@ Rien à changer dans `.gitignore` (`logs` et `*.log` y sont déjà) ni dans `.en
   « Pourquoi un CMS headless ? » modifié après publication reste en `modified` et apparaît dans le récapitulatif.
 - **Récapitulatif** (`draftsDigest`) : par locale, brouillons `never-published` puis `modified`
   (`publicationFilter`), avec titre, auteur (relation peuplée), date prévue de parution et état.
-  Écrit dans la console et dans `logs/crons.log` (fichier ignoré par git et par le watcher de `strapi develop`).
+  Écrit dans la console et dans `apps/backend/logs/crons.log` (fichier ignoré par git et par le watcher de `strapi develop`).
 - **Mode démo** (`DEMO_MODE=true`) : publication toutes les 30 s (`*/30 * * * * *`), récapitulatif toutes les
   minutes à la seconde 15 (`15 * * * * *`, décalé pour ne jamais s'entremêler avec la publication).
   Sinon : toutes les 5 min (`0 */5 * * * *`) et tous les jours à 8 h (`0 0 8 * * *`), `tz: 'Europe/Paris'`.
@@ -47,22 +53,22 @@ Rien à changer dans `.gitignore` (`logs` et `*.log` y sont déjà) ni dans `.en
 ## Démo en 60 secondes
 
 Prérequis : config request appliquée, `DEMO_MODE=true` dans `.env`, `npm run demo:start` lancé,
-`tail -f logs/crons.log` projeté dans un terminal.
+`tail -f apps/backend/logs/crons.log` projeté dans un terminal.
 
 ```bash
-npx tsx scripts/crons/schedule-demo-article.ts        # publishAt = maintenant + 20 s (argument : autre délai en s)
+npx tsx apps/backend/scripts/crons/schedule-demo-article.ts        # publishAt = maintenant + 20 s (argument : autre délai en s)
 ```
 
 1. Le script affiche `Brouillon fr créé : « Parution programmée en direct (HH:MM:SS) »` : le montrer dans
    le Content Manager, statut Brouillon, champ `publishAt` rempli (10 s).
-2. À la seconde 15 de la minute, le récapitulatif le liste dans `logs/crons.log` (jamais publié, parution prévue).
-3. Au passage suivant du cron après l'heure prévue (au plus 30 s de latence), `logs/crons.log` affiche
+2. À la seconde 15 de la minute, le récapitulatif le liste dans `apps/backend/logs/crons.log` (jamais publié, parution prévue).
+3. Au passage suivant du cron après l'heure prévue (au plus 30 s de latence), `apps/backend/logs/crons.log` affiche
    `Publié : « Parution programmée en direct ... » (fr)` et le script termine par
    `Publié ! GET /api/articles?locale=fr le renvoie`. Rafraîchir le Content Manager : Publié.
 4. Enchaîner sur les webhooks : cette publication a déclenché `entry.publish`, le front est revalidé.
 
 `--no-wait` crée seulement le brouillon. Le script lit `.env` (`PORT`, `DEMO_ADMIN_*`, `STRAPI_READ_TOKEN`) ;
-en phase 2 : `PORT=1340 npx tsx scripts/crons/schedule-demo-article.ts`. Il réutilise une image de la
+en phase 2 : `PORT=1340 npx tsx apps/backend/scripts/crons/schedule-demo-article.ts`. Il réutilise une image de la
 médiathèque comme cover (sinon le contrôle SOCLE « API fr : ... avec cover » passe au rouge) et le premier auteur.
 
 **Attention au seed** : l'article `publication-programmee` (fr + en, `publishAt` passé) est publié au
@@ -72,13 +78,13 @@ Après `demo:reset`, il redevient brouillon jusqu'au démarrage suivant.
 
 ## Ce qui casse si on touche à quoi
 
-- **`cron.enabled` absent ou `false`** dans `config/server.ts` : aucune tâche ne tourne, `demo:check`
-  affiche « Cron pas encore activé ... » et « logs/crons.log absent ».
+- **`cron.enabled` absent ou `false`** dans `apps/backend/config/server.ts` : aucune tâche ne tourne, `demo:check`
+  affiche « Cron pas encore activé ... » et « apps/backend/logs/crons.log absent ».
 - **`DEMO_MODE`** : lu au chargement de la config (`process.env.DEMO_MODE === 'true'`, strictement `true`).
   Le changer impose un redémarrage de Strapi. `DEMO_MODE=false` le jour J = publication toutes les 5 min et
   récapitulatif à 8 h seulement : la démo live ne marche plus. `demo:check` adapte son seuil de fraîcheur
   du log (90 s en démo, 6 min sinon).
-- **Fuseau** : les règles et l'affichage sont en `Europe/Paris` (`TIMEZONE` dans `src/crons/log.ts`).
+- **Fuseau** : les règles et l'affichage sont en `Europe/Paris` (`TIMEZONE` dans `apps/backend/src/crons/log.ts`).
   `publishAt` est stocké en UTC et comparé à `new Date()` : le fuseau n'influe pas sur la décision de publier,
   seulement sur l'heure à laquelle tombe le récapitulatif de 8 h et sur les heures affichées.
   Changer `tz` pour une valeur invalide : Strapi log `Could not schedule cron job ... invalid schedule` et la tâche
@@ -88,7 +94,7 @@ Après `demo:reset`, il redevient brouillon jusqu'au démarrage suivant.
   un redémarrage sur base déjà publiée écrit juste « Aucun article programmé à publier. »).
   `demo:reset` (strapi import) ne déclenche pas les crons.
 - **Renommer `publishAt`** ou le rendre localisé : adapter le filtre de `publish-scheduled.ts`, le script et le check.
-- **Renommer les clés `publishScheduledArticles` / `draftsDigest`** : le check les cherche dans `config/cron-tasks.ts`.
+- **Renommer les clés `publishScheduledArticles` / `draftsDigest`** : le check les cherche dans `apps/backend/config/cron-tasks.ts`.
 - **Désactiver Draft & Publish sur article** : `publicationFilter` n'a plus d'effet, les tâches n'ont plus de sens.
 - **Latence** : un article est publié au passage du cron qui suit son `publishAt` (0 à 30 s en démo, 0 à 5 min
   sinon), jamais pile à l'heure.
@@ -99,7 +105,7 @@ Après `demo:reset`, il redevient brouillon jusqu'au démarrage suivant.
   (`node_modules/@strapi/core/dist/services/cron.js`, qui convertit `rule` / `tz` / `start` / `end` en options croner).
   Le format objet de la doc fonctionne tel quel.
 - Aucune API publique pour lister les tâches depuis l'extérieur du processus : le check vérifie donc la
-  configuration (fichiers) + la fraîcheur de `logs/crons.log` (la publication écrit une ligne à chaque passage).
+  configuration (fichiers) + la fraîcheur de `apps/backend/logs/crons.log` (la publication écrit une ligne à chaque passage).
 
 ## Sorties réelles (23/09/2026, port 1340, DEMO_MODE=true, après `demo:reset`)
 
@@ -160,7 +166,7 @@ Webhooks reçus par le serveur d'écoute temporaire (port 3013) :
 Tout est vert : 11/11 OK
 ```
 
-Avant intégration (`config/server.ts` du SOCLE, cron non activé) :
+Avant intégration (`apps/backend/config/server.ts` du SOCLE, cron non activé) :
 
 ```
 == CRONS

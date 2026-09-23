@@ -1,61 +1,29 @@
-# 🚀 Getting started with Strapi
+# strapi-prez-demo
 
-Strapi comes with a full featured [Command Line Interface](https://docs.strapi.io/dev-docs/cli) (CLI) which lets you scaffold and manage your project in seconds.
+Démo du talk « Headless CMS en pratique : Strapi au-delà du simple CMS ».
+Monorepo npm workspaces + Turborepo :
 
-### `develop`
+| Dossier | Contenu |
+|---|---|
+| `apps/backend` | Strapi 5.54.0 (SQLite), plugin local `src/plugins/editorial-toolkit`, scripts de démo (`scripts/`) |
+| `apps/frontend` | Next.js 16.3.6 (App Router), front de production |
+| `docs/` | handoffs, MCP (`docs/mcp/mcp-curl.sh`), webhooks, plugin |
+| `DEMO.md` | déroulé minuté de la démo, plans B |
 
-Start your Strapi application with autoReload enabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-develop)
+## Démarrer (tout depuis la racine)
 
-```
-npm run develop
-# or
-yarn develop
-```
-
-### `start`
-
-Start your Strapi application with autoReload disabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-start)
-
-```
-npm run start
-# or
-yarn start
+```bash
+npm install            # un seul lockfile ; construit aussi le plugin
+npm run demo:reset     # base de démo propre (environ 6 s)
+npm run demo:start     # TUI Turborepo : Strapi http://localhost:1337/admin + front http://localhost:3000
+npm run demo:check     # 30 s après le démarrage : 33/33 attendu
 ```
 
-### `build`
+- `npm run dev` : Strapi `develop` + `next dev` (pas de cache côté front).
+- `npm run demo:start -- --ui=stream` : mêmes serveurs, logs à la suite au lieu de la TUI.
+- TUI : `↑` / `↓` pour passer des logs de Strapi à ceux du front, `u` / `d` pour défiler,
+  `m` pour la liste des touches, `Ctrl+C` pour tout arrêter.
 
-Build your admin panel. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-build)
-
-```
-npm run build
-# or
-yarn build
-```
-
-## ⚙️ Deployment
-
-Strapi gives you many possible deployment options for your project including [Strapi Cloud](https://cloud.strapi.io). Browse the [deployment section of the documentation](https://docs.strapi.io/dev-docs/deployment) to find the best solution for your use case.
-
-```
-yarn strapi deploy
-```
-
-## 📚 Learn more
-
-- [Resource center](https://strapi.io/resource-center) - Strapi resource center.
-- [Strapi documentation](https://docs.strapi.io) - Official Strapi documentation.
-- [Strapi tutorials](https://strapi.io/tutorials) - List of tutorials made by the core team and the community.
-- [Strapi blog](https://strapi.io/blog) - Official Strapi blog containing articles made by the Strapi team and the community.
-- [Changelog](https://strapi.io/changelog) - Find out about the Strapi product updates, new features and general improvements.
-
-Feel free to check out the [Strapi GitHub repository](https://github.com/strapi/strapi). Your feedback and contributions are welcome!
-
-## ✨ Community
-
-- [Discord](https://discord.strapi.io) - Come chat with the Strapi community including the core team.
-- [Forum](https://forum.strapi.io/) - Place to discuss, ask questions and find answers, show your Strapi project and get feedback or just talk with other Community members.
-- [Awesome Strapi](https://github.com/strapi/awesome-strapi) - A curated list of awesome things related to Strapi.
-
----
-
-<sub>🤫 Psst! [Strapi is hiring](https://strapi.io/careers).</sub>
+Fichiers `.env` non versionnés : `apps/backend/.env` et `apps/frontend/.env` (modèles `.env.example`).
+Ne jamais lancer `npm install` dans un sous-dossier : l'admin Strapi (React 18) et le front (React 19)
+partagent un seul lockfile, voir `docs/handoff/socle.md`, section « Monorepo Turborepo ».

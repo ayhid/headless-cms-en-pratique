@@ -15,8 +15,9 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Admin => 
   secrets: {
     encryptionKey: env('ENCRYPTION_KEY')!,
   },
-  // strapi develop ne redemarre pas quand on modifie le front, les scripts de demo, l'export ou la doc
-  watchIgnoreFiles: ['**/frontend/**', '**/scripts/**', '**/data/**', '**/docs/**', '**/*.md'],
+  // strapi develop ne redemarre pas quand on modifie les scripts de demo, l'export, la doc, ni quand
+  // turbo ecrit dans .turbo/ (le front est hors de apps/backend depuis le passage en monorepo)
+  watchIgnoreFiles: ['**/frontend/**', '**/scripts/**', '**/data/**', '**/docs/**', '**/*.md', '**/.turbo/**'],
   // Bouton "Aperçu" du Content Manager : ouvre le front Next.js en mode brouillon (Draft Mode)
   // via FRONTEND_URL/api/preview?secret=...&slug=...&locale=...&status=draft|published (config request FRONT)
   preview: {

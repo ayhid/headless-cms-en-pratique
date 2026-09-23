@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # Plan B de la démo MCP : rejoue le scénario en JSON-RPC avec curl, sans client IA.
-#   bash docs/mcp/mcp-curl.sh            # Strapi sur le port de .env (1337 par défaut)
+#   bash docs/mcp/mcp-curl.sh            # Strapi sur le port de apps/backend/.env (1337 par défaut)
 #   PORT=1338 bash docs/mcp/mcp-curl.sh  # autre port
-# Lit STRAPI_READ_TOKEN, STRAPI_MCP_ADMIN_TOKEN et STRAPI_MCP_READONLY_TOKEN dans .env.
+# Lit STRAPI_READ_TOKEN, STRAPI_MCP_ADMIN_TOKEN et STRAPI_MCP_READONLY_TOKEN dans apps/backend/.env
+# (à lancer depuis n'importe où : le script se place à la racine du dépôt).
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 PORT_OVERRIDE="${PORT:-}"
-set -a; . ./.env; set +a
+set -a; . ./apps/backend/.env; set +a
 [ -n "$PORT_OVERRIDE" ] && PORT="$PORT_OVERRIDE"
 URL="http://localhost:${PORT:-1337}/mcp"
 SLUG="brouillon-mcp-curl-$(date +%H%M%S)"

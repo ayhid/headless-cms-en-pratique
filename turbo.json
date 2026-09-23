@@ -1,0 +1,33 @@
+{
+  "$schema": "./node_modules/turbo/schema.json",
+  "ui": "tui",
+  "envMode": "loose",
+  "noUpdateNotifier": true,
+  "tasks": {
+    "plugin:build": {
+      "cache": false
+    },
+    "build": {
+      "cache": false
+    },
+    "dev": {
+      "dependsOn": ["plugin:build"],
+      "persistent": true,
+      "cache": false
+    },
+    "demo:start": {
+      "persistent": true,
+      "cache": false
+    },
+    "backend#demo:start": {
+      "dependsOn": ["backend#plugin:build"],
+      "persistent": true,
+      "cache": false
+    },
+    "frontend#demo:start": {
+      "dependsOn": ["frontend#build"],
+      "persistent": true,
+      "cache": false
+    }
+  }
+}

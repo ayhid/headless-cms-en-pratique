@@ -40,11 +40,10 @@
     "**/*.test.*",
     // Do not include plugins in the server compilation
     "src/plugins/**",
-    // Scripts de demo (executes par tsx), front Next.js et exports : hors compilation Strapi
+    // Scripts de demo (executes par tsx) et exports : hors compilation Strapi
     "scripts/",
-    "frontend/",
     "data/",
-    // Documentation (scripts d'exemple de docs/mcp, etc.) : hors compilation Strapi
-    "docs/"
+    "logs/",
+    ".turbo/"
   ]
 }

@@ -1,9 +1,15 @@
 # Config request : MCP
 
+> **Monorepo Turborepo (23/09)** : Strapi vit désormais dans `apps/backend/` et le front dans `apps/frontend/`.
+> Les chemins de ce document ont été réécrits en conséquence ; un `.env` sans préfixe désigne `apps/backend/.env`.
+> Les commandes `npm run ...` se lancent depuis la racine du dépôt ; les extraits de `package.json` cités plus bas
+> sont ceux de `apps/backend/package.json`. `scripts/demo-start.mts` n'existe plus : `npm run demo:start` passe par
+> turbo. Détails : `docs/handoff/socle.md`, section « Monorepo Turborepo ».
+
 Tout ce qui suit a été appliqué localement dans le worktree MCP (port 1338), testé, puis retiré avec
 `git checkout` avant le commit. Le diff ci-dessous est exactement celui qui a tourné.
 
-## 1. config/server.ts
+## 1. apps/backend/config/server.ts
 
 - Pourquoi : activer le serveur MCP natif (endpoint `/mcp`), désactivé par défaut.
 - Changement exact : remplacer le bloc `mcp` actuel (et la ligne de commentaire `[config request MCP]`) par :
@@ -18,7 +24,7 @@ Tout ce qui suit a été appliqué localement dans le worktree MCP (port 1338), 
   `curl -s -o /dev/null -w '%{http_code}\n' -X POST http://localhost:1337/mcp -H 'Content-Type: application/json' -d '{}'`
   doit répondre `401` (et non `405`, qui signifie MCP désactivé).
 
-## 2. src/index.ts : Admin tokens MCP à valeur fixe
+## 2. apps/backend/src/index.ts : Admin tokens MCP à valeur fixe
 
 - Pourquoi : `strapi export` n'embarque pas les tokens ; sans ce bootstrap, `demo:reset` efface les Admin
   tokens et il faudrait les recréer (valeurs aléatoires) avant chaque démo. Même technique que
@@ -116,7 +122,7 @@ c) Dans le commentaire d'en-tête, ajouter la ligne :
   - `STRAPI_MCP_READONLY_TOKEN=demo-mcp-readonly-02c16f0c9356687f65456b0ee5bcf61852dd6623bc1e665e29ae760904120ab0`
     - `.env.example` : `# Valeur FIXE de l'Admin token MCP en lecture seule (article : lire)`
       puis `STRAPI_MCP_READONLY_TOKEN=demo-mcp-readonly-aRemplacer`
-  - Valeurs de démo générées par `openssl rand -hex 32`, fictives. Inutile de les recopier dans `frontend/.env`
+  - Valeurs de démo générées par `openssl rand -hex 32`, fictives. Inutile de les recopier dans `apps/frontend/.env`
     (le front n'utilise pas le MCP).
 - Dépendances npm : aucune.
 - Comment vérifier après application :

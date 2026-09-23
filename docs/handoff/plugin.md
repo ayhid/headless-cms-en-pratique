@@ -1,9 +1,15 @@
 # Handoff PLUGIN : « Boîte à outils éditoriale » (`editorial-toolkit`)
 
-Plugin local Strapi 5.54.0 dans `src/plugins/editorial-toolkit`, créé avec le Plugin SDK
+> **Monorepo Turborepo (23/09)** : Strapi vit désormais dans `apps/backend/` et le front dans `apps/frontend/`.
+> Les chemins de ce document ont été réécrits en conséquence ; un `.env` sans préfixe désigne `apps/backend/.env`.
+> Les commandes `npm run ...` se lancent depuis la racine du dépôt ; les extraits de `package.json` cités plus bas
+> sont ceux de `apps/backend/package.json`. `scripts/demo-start.mts` n'existe plus : `npm run demo:start` passe par
+> turbo. Détails : `docs/handoff/socle.md`, section « Monorepo Turborepo ».
+
+Plugin local Strapi 5.54.0 dans `apps/backend/src/plugins/editorial-toolkit`, créé avec le Plugin SDK
 (`npx @strapi/sdk-plugin@6.1.1 init`, TypeScript, admin + serveur), puis complété à la main.
 Aucun fichier du SOCLE n’est modifié par ce commit : tout ce qui touche `package.json`,
-`config/plugins.ts` et le schéma d’article est dans `docs/handoff/config-requests/plugin.md`.
+`apps/backend/config/plugins.ts` et le schéma d’article est dans `docs/handoff/config-requests/plugin.md`.
 
 ## Ce que fait le plugin (tout vérifié en vrai, sorties plus bas)
 
@@ -102,12 +108,12 @@ http://localhost:1337/admin avec l’admin de démo.
 - Un plugin SDK est chargé depuis `dist/` : `package.json#exports["./strapi-server"]` pour le
   serveur, `exports["./strapi-admin"].import` (= `dist/admin/index.mjs`) pour l’admin (vérifié dans
   `@strapi/strapi/dist/src/node/core/plugins.js`, et `.strapi/client/app.js` importe bien
-  `src/plugins/editorial-toolkit/./dist/admin/index.mjs`). `strapi develop` ne compile pas
-  `src/plugins/**` (exclu du `tsconfig.json` racine).
+  `apps/backend/src/plugins/editorial-toolkit/./dist/admin/index.mjs`). `strapi develop` ne compile pas
+  `apps/backend/src/plugins/**` (exclu du `tsconfig.json` racine).
 - `@strapi/sdk-plugin` 6.1.1 est installé **à la racine** (devDependency) ; le plugin n’a pas de
   `node_modules` propre et ne doit pas en avoir (doublon de `@strapi/strapi`, erreur
   `X must be used within StrapiApp` citée par la doc). `npm run build --prefix
-  src/plugins/editorial-toolkit` trouve `strapi-plugin` et les dépendances dans le
+  apps/backend/src/plugins/editorial-toolkit` trouve `strapi-plugin` et les dépendances dans le
   `node_modules` racine.
 - Les scripts `postinstall`, `predemo:reset`, `predemo:start`, `predevelop`, `predev`, `prebuild`
   lancent `npm run plugin:build` (environ 3 s) : aucune étape manuelle à oublier.
@@ -123,7 +129,7 @@ $ npm install                    # postinstall -> [INFO] Build complete!  (added
 $ time PORT=1342 npm run demo:reset
 [INFO] Build complete!
 [reset] Base et uploads supprimes (0.0 s)
-[reset] Restauration de data/demo-export.tar via strapi import...
+[reset] Restauration de apps/backend/data/demo-export.tar via strapi import...
 [reset] Termine en 2.2 s (mode : import). Lancer ensuite : npm run demo:start
 ... 4.813 total
 $ npm run build                  # prebuild + strapi build (admin de production)
@@ -135,7 +141,7 @@ $ PORT=1342 FRONT_PORT=3005 npm run demo:start   # [INFO] Build complete! ... St
 $ PORT=1342 FRONT_PORT=3005 npm run demo:check   # Tout est vert : 14/14 OK
 ```
 
-Contre-épreuve sans build (`dist/` supprimé, `tsx scripts/demo-reset.ts` lancé sans le hook) :
+Contre-épreuve sans build (`dist/` supprimé, `tsx apps/backend/scripts/demo-reset.ts` lancé sans le hook) :
 `Error: Could not find Custom Field: plugin::editorial-toolkit.tone`, l’import et le seed échouent.
 
 ## Sorties réelles des vérifications
@@ -220,23 +226,23 @@ pour garder la base propre).
   Garder les hooks `pre*`/`postinstall` ; après un `git clean` ou un clone, `npm install` suffit.
 - **Code serveur du plugin modifié** : `npm run plugin:build` puis redémarrer Strapi.
 - **Nom stocké dans les schémas** : `plugin::editorial-toolkit.tone` = `plugin::<nom du plugin>.<nom
-  du champ>`. Renommer le plugin (clé dans `config/plugins.ts`, `strapi.name`, `PLUGIN_ID`) ou le
+  du champ>`. Renommer le plugin (clé dans `apps/backend/config/plugins.ts`, `strapi.name`, `PLUGIN_ID`) ou le
   champ (`TONE_FIELD_NAME` dans `shared/constants.ts`) casse tous les schémas qui l’utilisent.
   `plugin` (serveur) et `pluginId` (admin) doivent rester identiques.
 - **Valeurs du ton** (`factuel`, `pedagogique`, `enthousiaste`, `decale`) : ce sont les chaînes
   stockées en base. En changer une rend les anciennes valeurs orphelines (affichées « Non
   renseigné »). Les libellés, eux, peuvent changer librement (traductions).
-- **Désactiver le plugin** (`enabled: false` ou retrait de `config/plugins.ts`) alors qu’Article
+- **Désactiver le plugin** (`enabled: false` ou retrait de `apps/backend/config/plugins.ts`) alors qu’Article
   garde l’attribut `tone` : le custom field n’est plus enregistré, même erreur que la
   contre-épreuve sans build (`Could not find Custom Field`). Retirer d’abord l’attribut du schéma.
 - **Schéma d’article** : le panneau et le tableau de bord lisent `cover`, `excerpt`, `seo.metaTitle`,
   `seo.metaDescription`, `blocks`, `publishAt`. Renommer l’un d’eux fait échouer le critère
   correspondant (sans plantage). L’attribut du ton est détecté automatiquement, quel que soit son nom.
-- **`npm install` dans `src/plugins/editorial-toolkit`** : à ne jamais faire (second
+- **`npm install` dans `apps/backend/src/plugins/editorial-toolkit`** : à ne jamais faire (second
   `@strapi/strapi`, admin cassé). Si c’est fait : supprimer ce `node_modules`.
 - **Montée de version Strapi** : `unstable_useContentManagerContext` (lecture du schéma dans le
   panneau) peut changer de signature ; c’est le seul import « unstable » du plugin.
-- **Jeton de contrôle** : `scripts/checks/plugin.ts` supprime et recrée à chaque passage le jeton
+- **Jeton de contrôle** : `apps/backend/scripts/checks/plugin.ts` supprime et recrée à chaque passage le jeton
   Admin « Contrôle demo:check (plugin éditorial) » (lecture des articles) quand le MCP est actif.
 
 ## Écarts par rapport à la demande

@@ -1,5 +1,11 @@
 # Handoff CONTENU (phase 2)
 
+> **Monorepo Turborepo (23/09)** : Strapi vit désormais dans `apps/backend/` et le front dans `apps/frontend/`.
+> Les chemins de ce document ont été réécrits en conséquence ; un `.env` sans préfixe désigne `apps/backend/.env`.
+> Les commandes `npm run ...` se lancent depuis la racine du dépôt ; les extraits de `package.json` cités plus bas
+> sont ceux de `apps/backend/package.json`. `scripts/demo-start.mts` n'existe plus : `npm run demo:start` passe par
+> turbo. Détails : `docs/handoff/socle.md`, section « Monorepo Turborepo ».
+
 ## Populate exact (à appliquer tel quel par FRONT et l'intégration)
 
 Le populate du contrat **suffit**, galerie comprise (vérifié en réel sur Strapi 5.54.0) :
@@ -17,14 +23,14 @@ populate du Document Service).
 
 **URLs des médias** : relatives (`/uploads/...`, provider local). Le front les préfixe avec
 `NEXT_PUBLIC_STRAPI_URL`, sinon `STRAPI_URL` (server components), sinon `http://localhost:1337`
-(`frontend/components/blocks/media.ts`, fonction `strapiMediaUrl`, exportée aussi par `@/components/blocks`
+(`apps/frontend/components/blocks/media.ts`, fonction `strapiMediaUrl`, exportée aussi par `@/components/blocks`
 pour la cover). Les URLs absolues (provider cloud) sont laissées telles quelles.
 Les images sont rendues avec `<img>` et non `next/image` : pas de dépendance à `images.remotePatterns`
 (limité au port 1337 dans `next.config.ts`).
 
 ## Ce qui marche (vérifié)
 
-- **Components** (`src/components`), noms affichés en français dans l'admin, icônes valides du sélecteur
+- **Components** (`apps/backend/src/components`), noms affichés en français dans l'admin, icônes valides du sélecteur
   d'icônes du Content-type Builder (une icône inconnue retombe sur « dashboard ») :
 
 | uid | displayName | icône | champs |
@@ -37,14 +43,14 @@ Les images sont rendues avec `<img>` et non `next/image` : pas de dépendance à
   `shared.seo` est bien réutilisé par `article` ET `category` (schémas du SOCLE, rien à changer).
   Aucun nom de champ n'est partagé avec un type différent entre les components de la zone
   (contrainte des zones dynamiques).
-- **Seed** `scripts/seed/contenu.ts` : article `composer-un-article-bloc-par-bloc` (fr) /
+- **Seed** `apps/backend/scripts/seed/contenu.ts` : article `composer-un-article-bloc-par-bloc` (fr) /
   `composing-an-article-block-by-block` (en), publié dans les deux locales via le Document Service :
   texte riche (titre, paragraphes, code en ligne, gras, liste, lien) + citation (Léa Fontaine, personne fictive)
   + galerie de 3 images (uploads dédiés `galerie-1..3.png` avec texte alternatif) + SEO avec image de partage.
   Auteur Ines Carvalho, catégorie Editorial. Idempotent (ne fait rien si le slug existe).
-  Vérifié : `demo:reset` **sans** `data/demo-export.tar` bascule sur le seed et crée l'article (4,3 s) :
+  Vérifié : `demo:reset` **sans** `apps/backend/data/demo-export.tar` bascule sur le seed et crée l'article (4,3 s) :
   `Seed agent : contenu` puis `article composé publié en fr et en`, `6 article(s) publies en fr, 6 en en`.
-- **Front** `frontend/components/blocks/` (server components, Tailwind) : `index.tsx` (`Blocks({ blocks })`,
+- **Front** `apps/frontend/components/blocks/` (server components, Tailwind) : `index.tsx` (`Blocks({ blocks })`,
   dispatch sur `__component`), `rich-text.tsx` (rendu maison du format blocks : paragraph, heading 1 à 6,
   list ordonnée ou non, list-item, link, quote, code, image, marques bold/italic/underline/strikethrough/code),
   `quote.tsx`, `gallery.tsx` (grille 1 à 3 colonnes, rendition `medium` si elle existe), `media.ts`, `types.ts`.
@@ -58,7 +64,7 @@ Les images sont rendues avec `<img>` et non `next/image` : pas de dépendance à
   dans la réponse de l'API publique et dans le HTML rendu.
   Piège : renvoyer le document tel que le GET l'a renvoyé échoue en 400 `Invalid status` dès qu'il a été
   modifié (`status: "modified"`) ; retirer le champ `status` du corps du PUT et du publish.
-- **Check** `scripts/checks/contenu.ts` : 3 lignes, vertes avec la base issue du seed (11/11 au total).
+- **Check** `apps/backend/scripts/checks/contenu.ts` : 3 lignes, vertes avec la base issue du seed (11/11 au total).
 
 ## Forme des données par bloc (réponse réelle, tronquée)
 
@@ -106,12 +112,12 @@ Plan B si le clic rate en direct : `curl` sur l'API avec le populate ci-dessus e
 
 ## Ce qui casse si on touche à quoi
 
-- **Renommer un component** (fichier `src/components/blocks/quote.json` → autre nom, ou changer sa catégorie) :
+- **Renommer un component** (fichier `apps/backend/src/components/blocks/quote.json` → autre nom, ou changer sa catégorie) :
   l'uid `blocks.quote` change, donc la zone dynamique de `article` (schéma du SOCLE) référence un component
-  absent, le seed du SOCLE et `scripts/seed/contenu.ts` échouent, l'import de `data/demo-export.tar` échoue,
+  absent, le seed du SOCLE et `apps/backend/scripts/seed/contenu.ts` échouent, l'import de `apps/backend/data/demo-export.tar` échoue,
   et le front affiche l'encart « Bloc non pris en charge ». Changer le **displayName** ou l'**icône** est sans risque.
 - **Renommer un champ** (`text`, `author`, `role`, `images`, `caption`, `body`, `metaTitle`...) : casse les deux seeds,
-  l'export et les composants du front (`frontend/components/blocks/types.ts`). Supprimer un champ efface ses données.
+  l'export et les composants du front (`apps/frontend/components/blocks/types.ts`). Supprimer un champ efface ses données.
 - **Rendre `role` ou `caption` requis** : le seed du SOCLE crée des citations sans `role`, il échouerait.
 - **Ajouter un champ de même nom mais de type différent** dans deux components de la zone : interdit par Strapi.
 - **Ajouter un component à la zone dynamique** : le front affiche l'encart de repli (dev) ou rien (prod)
@@ -126,7 +132,7 @@ Plan B si le clic rate en direct : `curl` sur l'API avec le populate ci-dessus e
 - Le parcours de clics ci-dessus n'a pas été exécuté dans Chrome : se connecter à l'admin demande de saisir
   un mot de passe, ce que je ne fais pas. L'opération équivalente a été faite par l'API admin du Content Manager
   (mêmes routes que l'interface) et les libellés viennent des fichiers de traduction fr de Strapi 5.54.0.
-- L'export `data/demo-export.tar` n'est pas régénéré (fichier du SOCLE) : avec l'export actuel, l'article
+- L'export `apps/backend/data/demo-export.tar` n'est pas régénéré (fichier du SOCLE) : avec l'export actuel, l'article
   composé n'existe pas et le check CONTENU est rouge. À régénérer à l'intégration.
-- `types/generated/components.d.ts` est régénéré par `strapi develop` : non commité (hors périmètre).
+- `apps/backend/types/generated/components.d.ts` est régénéré par `strapi develop` : non commité (hors périmètre).
 - Les textes du seed SOCLE (citations, extraits) sont sans accents ; ils s'affichent tels quels dans les blocs.

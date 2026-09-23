@@ -1,6 +1,6 @@
 # Créer le webhook de revalidation dans l'admin Strapi
 
-> **Rappel : rien à faire en temps normal.** Le bootstrap du SOCLE (`src/index.ts`, fonction `ensureWebhook`)
+> **Rappel : rien à faire en temps normal.** Le bootstrap du SOCLE (`apps/backend/src/index.ts`, fonction `ensureWebhook`)
 > crée ou réaligne à chaque démarrage le webhook **« Revalidation front Next.js »** vers
 > `FRONTEND_URL/api/revalidate`, abonné à `entry.publish` et `entry.unpublish`. Cette procédure sert
 > à le montrer en direct pendant le talk, ou à le recréer à la main si quelqu'un l'a supprimé
@@ -21,7 +21,7 @@ Libellés relevés dans les traductions françaises de `@strapi/admin` 5.54.0
      que lettres, chiffres, espaces et underscores : pas de deux-points ni de tiret.
    - **Url** (`Settings.webhooks.form.url`) : `http://localhost:3000/api/revalidate`.
    - **En-têtes** (`Settings.webhooks.form.headers`) : **laisser vide**. Le header `Authorization` vient de
-     `webhooks.defaultHeaders` dans `config/server.ts` (voir la config request WEBHOOKS), le secret reste donc
+     `webhooks.defaultHeaders` dans `apps/backend/config/server.ts` (voir la config request WEBHOOKS), le secret reste donc
      hors de la base. Un en-tête saisi ici avec la même clé écraserait celui par défaut.
    - **Evénements** (`Settings.webhooks.form.events`) : sur la ligne **Entry**, cocher uniquement **Publier**
      (`app.utils.publish`) et **Annuler la publication** (`app.utils.unpublish`). Infobulle affichée :
@@ -38,4 +38,4 @@ Libellés relevés dans les traductions françaises de `@strapi/admin` 5.54.0
 - Publier un article dans le Content Manager, puis regarder le terminal du front :
   `[webhook] entry.publish article "<titre>" (fr) -> tags revalidés : articles, article:<slug>`.
 - Si le log affiche `refusé : header Authorization absent ou secret invalide (401)`, c'est que
-  `webhooks.defaultHeaders` n'est pas en place ou que `WEBHOOK_SECRET` diffère entre `.env` et `frontend/.env`.
+  `webhooks.defaultHeaders` n'est pas en place ou que `WEBHOOK_SECRET` diffère entre `.env` et `apps/frontend/.env`.

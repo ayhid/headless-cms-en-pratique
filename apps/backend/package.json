@@ -1,0 +1,57 @@
+{
+  "name": "backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Démo du talk \"Headless CMS en pratique : Strapi au-delà du simple CMS\"",
+  "scripts": {
+    "build": "strapi build",
+    "console": "strapi console",
+    "deploy": "strapi deploy",
+    "dev": "strapi develop",
+    "develop": "strapi develop",
+    "start": "strapi start",
+    "strapi": "strapi",
+    "upgrade": "npx @strapi/upgrade latest",
+    "upgrade:dry": "npx @strapi/upgrade latest --dry",
+    "seed": "tsx scripts/seed/index.ts",
+    "demo:export": "tsx scripts/demo-export.ts",
+    "demo:reset": "tsx scripts/demo-reset.ts",
+    "demo:check": "tsx scripts/demo-check.ts",
+    "assets:generate": "node scripts/seed/generate-assets.mjs",
+    "webhooks:simulate": "tsx scripts/webhooks/simulate-publish.ts",
+    "plugin:build": "npm run build --prefix src/plugins/editorial-toolkit",
+    "plugin:watch": "npm run watch --prefix src/plugins/editorial-toolkit",
+    "predemo:reset": "npm run plugin:build",
+    "prebuild": "npm run plugin:build",
+    "demo:start": "strapi develop",
+    "predevelop": "npm run plugin:build",
+    "demo:schedule": "tsx scripts/crons/schedule-demo-article.ts"
+  },
+  "dependencies": {
+    "@strapi/database": "5.54.0",
+    "@strapi/plugin-cloud": "5.54.0",
+    "@strapi/plugin-users-permissions": "5.54.0",
+    "@strapi/strapi": "5.54.0",
+    "better-sqlite3": "12.8.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.30.3",
+    "styled-components": "^6.0.0"
+  },
+  "devDependencies": {
+    "@strapi/sdk-plugin": "6.1.1",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "tsx": "4.23.15",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=20.0.0 <=26.x.x",
+    "npm": ">=6.0.0"
+  },
+  "strapi": {
+    "uuid": "4bf741ee-eeb9-42eb-b441-21f05aa29018",
+    "installId": "5157ccc8a3f2be2ca614201abaa84d20fbd3bc27f05644eb43f87f6e927e5389"
+  }
+}

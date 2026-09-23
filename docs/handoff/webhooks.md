@@ -1,17 +1,23 @@
 # Handoff WEBHOOKS (phase 2)
 
+> **Monorepo Turborepo (23/09)** : Strapi vit désormais dans `apps/backend/` et le front dans `apps/frontend/`.
+> Les chemins de ce document ont été réécrits en conséquence ; un `.env` sans préfixe désigne `apps/backend/.env`.
+> Les commandes `npm run ...` se lancent depuis la racine du dépôt ; les extraits de `package.json` cités plus bas
+> sont ceux de `apps/backend/package.json`. `scripts/demo-start.mts` n'existe plus : `npm run demo:start` passe par
+> turbo. Détails : `docs/handoff/socle.md`, section « Monorepo Turborepo ».
+
 Publication dans Strapi -> webhook -> `POST /api/revalidate` côté Next.js -> `revalidateTag` sur
 `articles` et `article:<slug>` -> la page suivante est rendue avec les données fraîches, sans redémarrage.
 
-Fichiers : `frontend/app/api/revalidate/route.ts`, `scripts/webhooks/lib.ts`,
-`scripts/webhooks/simulate-publish.ts`, `scripts/checks/webhooks.ts`, `docs/webhooks/admin.md`,
+Fichiers : `apps/frontend/app/api/revalidate/route.ts`, `apps/backend/scripts/webhooks/lib.ts`,
+`apps/backend/scripts/webhooks/simulate-publish.ts`, `apps/backend/scripts/checks/webhooks.ts`, `docs/webhooks/admin.md`,
 config request `docs/handoff/config-requests/webhooks.md`.
 
 ## Ce qui marche (vérifié sur Strapi 1339 + Next 3002 en `next build && next start`)
 
 - **Authentification** : header `Authorization` comparé à `Bearer ${WEBHOOK_SECRET}` à temps constant
   (`timingSafeEqual` sur deux empreintes SHA-256, donc longueur fixe). Absent ou faux : **401**.
-  `WEBHOOK_SECRET` absent de `frontend/.env` : 500 et log explicite.
+  `WEBHOOK_SECRET` absent de `apps/frontend/.env` : 500 et log explicite.
 - **Filtrage** : l'événement est lu dans `X-Strapi-Event` (repli sur `event` du corps). Seuls `entry.publish` et
   `entry.unpublish` avec `model === 'article'` (ou `uid === 'api::article.article'`) revalident. Tout le reste
   (entry.update, trigger-test, media.*, autres modèles) : **200** `{ revalidated: false, ignored: true }` et log « ignoré ».
@@ -27,7 +33,7 @@ config request `docs/handoff/config-requests/webhooks.md`.
 
 ## Signature de `revalidateTag` retenue : `revalidateTag(tag, { expire: 0 })`
 
-Doc lue dans la version installée (`frontend/node_modules/next/dist/docs/01-app/03-api-reference/04-functions/revalidateTag.md`,
+Doc lue dans la version installée (`apps/frontend/node_modules/next/dist/docs/01-app/03-api-reference/04-functions/revalidateTag.md`,
 Next 16.3.6). Signature déclarée dans `next/dist/server/web/spec-extension/revalidate.d.ts` :
 `revalidateTag(tag: string, profile: string | CacheLifeConfig): undefined`.
 
@@ -53,14 +59,14 @@ Prérequis : config request appliquée (`webhooks.defaultHeaders`), Strapi redé
 3. Montrer le terminal du front :
    `[webhook] entry.publish article "Nouveau titre" (fr) -> tags revalidés : articles, article:<slug>`
 4. Recharger la page du front : nouveau titre, sans redémarrage.
-5. (Bonus 10 s) `npm run webhooks:simulate` (ou `npx tsx scripts/webhooks/simulate-publish.ts`) : 200 / 401 / ignoré.
+5. (Bonus 10 s) `npm run webhooks:simulate` (ou `npx tsx apps/backend/scripts/webhooks/simulate-publish.ts`) : 200 / 401 / ignoré.
 
 Plan B si le webhook ne part pas : la simulation (étape 5) revalide réellement les mêmes tags
 (slug `revalidation-a-la-demande`) et montre le même log.
 
 ## Ce qui casse si on touche à quoi
 
-- **`WEBHOOK_SECRET`** : doit être identique dans `.env` (lu par Strapi via `defaultHeaders`) et `frontend/.env`
+- **`WEBHOOK_SECRET`** : doit être identique dans `.env` (lu par Strapi via `defaultHeaders`) et `apps/frontend/.env`
   (lu par la route). Changer l'un sans l'autre, ou oublier `defaultHeaders` : 401 à chaque publication, la page
   ne bouge plus. Changer le secret impose de redémarrer Strapi ET Next (`next start` lit l'environnement au démarrage).
 - **En-tête saisi dans l'admin** : un en-tête `Authorization` ajouté dans le formulaire du webhook écrase celui de
@@ -89,7 +95,7 @@ Plan B si le webhook ne part pas : la simulation (étape 5) revalide réellement
   au détail est inoffensif.
 - Ne pas mettre de tag de liste différent par locale (`articles:fr`...) sans me prévenir : la route ne revalide que `articles`.
 - Draft Mode contourne le cache (doc : « Draft Mode bypasses the cache entirely »), la preview n'est donc pas concernée.
-- Ne pas créer d'autre route sous `frontend/app/api/revalidate/` (propriété WEBHOOKS).
+- Ne pas créer d'autre route sous `apps/frontend/app/api/revalidate/` (propriété WEBHOOKS).
 
 ## Sorties réelles
 
@@ -138,7 +144,7 @@ HTTP 200 {"data": {"statusCode": 200}}
 [webhook] trigger-test -> ignoré (seuls entry.publish et entry.unpublish d'un article revalident)
 ```
 
-`FRONT_PORT=3002 npx tsx scripts/webhooks/simulate-publish.ts` :
+`FRONT_PORT=3002 npx tsx apps/backend/scripts/webhooks/simulate-publish.ts` :
 
 ```
 Simulation du webhook Strapi vers http://localhost:3002/api/revalidate

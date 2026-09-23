@@ -1,5 +1,6 @@
 // Controles supplementaires du SOCLE (exemple du format pour les autres agents).
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import type { CheckFn } from './types';
 
@@ -16,7 +17,8 @@ function gte(a: string, b: string) {
 
 const check: CheckFn = async (ctx) => {
   const version = JSON.parse(
-    readFileSync(join(ctx.root, 'node_modules', '@strapi', 'strapi', 'package.json'), 'utf8'),
+    // Monorepo : @strapi/strapi est remonte dans le node_modules de la racine du depot, on le resout comme Node.
+    readFileSync(createRequire(join(ctx.root, 'package.json')).resolve('@strapi/strapi/package.json'), 'utf8'),
   ).version as string;
   return [
     {

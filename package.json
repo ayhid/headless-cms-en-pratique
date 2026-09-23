@@ -2,61 +2,39 @@
   "name": "strapi-prez-demo",
   "version": "0.1.0",
   "private": true,
-  "description": "Démo du talk \"Headless CMS en pratique : Strapi au-delà du simple CMS\"",
+  "description": "Démo du talk \"Headless CMS en pratique : Strapi au-delà du simple CMS\" (monorepo Turborepo : apps/backend Strapi, apps/frontend Next.js)",
+  "workspaces": [
+    "apps/*"
+  ],
+  "packageManager": "npm@10.9.4",
   "scripts": {
-    "build": "strapi build",
-    "console": "strapi console",
-    "deploy": "strapi deploy",
-    "dev": "strapi develop",
-    "develop": "strapi develop",
-    "start": "strapi start",
-    "strapi": "strapi",
-    "upgrade": "npx @strapi/upgrade latest",
-    "upgrade:dry": "npx @strapi/upgrade latest --dry",
-    "seed": "tsx scripts/seed/index.ts",
-    "demo:export": "tsx scripts/demo-export.ts",
-    "demo:reset": "tsx scripts/demo-reset.ts",
-    "demo:start": "tsx scripts/demo-start.mts",
-    "demo:start:dev": "FRONT_MODE=dev tsx scripts/demo-start.mts",
-    "demo:check": "tsx scripts/demo-check.ts",
-    "assets:generate": "node scripts/seed/generate-assets.mjs",
-    "webhooks:simulate": "tsx scripts/webhooks/simulate-publish.ts",
-    "plugin:build": "npm run build --prefix src/plugins/editorial-toolkit",
-    "plugin:watch": "npm run watch --prefix src/plugins/editorial-toolkit",
-    "postinstall": "npm run plugin:build",
-    "predemo:reset": "npm run plugin:build",
-    "predemo:start": "npm run plugin:build",
-    "predemo:start:dev": "npm run plugin:build",
-    "predevelop": "npm run plugin:build",
-    "predev": "npm run plugin:build",
-    "prebuild": "npm run plugin:build"
-  },
-  "dependencies": {
-    "@strapi/database": "5.54.0",
-    "@strapi/plugin-cloud": "5.54.0",
-    "@strapi/plugin-users-permissions": "5.54.0",
-    "@strapi/strapi": "5.54.0",
-    "better-sqlite3": "12.8.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "react-router-dom": "^6.30.3",
-    "styled-components": "^6.0.0"
+    "dev": "TURBO_TELEMETRY_DISABLED=1 NEXT_TELEMETRY_DISABLED=1 STRAPI_TELEMETRY_DISABLED=true turbo run dev",
+    "demo:start": "TURBO_TELEMETRY_DISABLED=1 NEXT_TELEMETRY_DISABLED=1 STRAPI_TELEMETRY_DISABLED=true turbo run demo:start",
+    "demo:start:dev": "TURBO_TELEMETRY_DISABLED=1 NEXT_TELEMETRY_DISABLED=1 STRAPI_TELEMETRY_DISABLED=true turbo run dev",
+    "demo:reset": "STRAPI_TELEMETRY_DISABLED=true npm run demo:reset -w backend",
+    "demo:check": "npm run demo:check -w backend",
+    "demo:export": "STRAPI_TELEMETRY_DISABLED=true npm run demo:export -w backend",
+    "seed": "npm run seed -w backend",
+    "webhooks:simulate": "npm run webhooks:simulate -w backend",
+    "plugin:build": "npm run plugin:build -w backend",
+    "plugin:watch": "npm run plugin:watch -w backend",
+    "postinstall": "npm run plugin:build -w backend",
+    "demo:schedule": "npm run demo:schedule -w backend --"
   },
   "devDependencies": {
-    "@strapi/sdk-plugin": "6.1.1",
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "concurrently": "10.0.5",
-    "tsx": "4.23.15",
-    "typescript": "^5"
+    "turbo": "2.11.3"
   },
   "engines": {
     "node": ">=20.0.0 <=26.x.x",
-    "npm": ">=6.0.0"
+    "npm": ">=7.0.0"
   },
-  "strapi": {
-    "uuid": "4bf741ee-eeb9-42eb-b441-21f05aa29018",
-    "installId": "5157ccc8a3f2be2ca614201abaa84d20fbd3bc27f05644eb43f87f6e927e5389"
+  "overrides": {
+    "next": {
+      "react": "19.2.8",
+      "react-dom": "19.2.8"
+    },
+    "styled-jsx": {
+      "react": "19.2.8"
+    }
   }
 }

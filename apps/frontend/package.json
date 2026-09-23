@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p ${FRONT_PORT:-3000}",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p ${FRONT_PORT:-3000}",
+    "demo:start": "bash scripts/start-with-log.sh",
     "lint": "eslint"
   },
   "dependencies": {

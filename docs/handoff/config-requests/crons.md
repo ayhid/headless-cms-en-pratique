@@ -1,8 +1,14 @@
 # Config request : CRONS
 
-## 1. config/server.ts
+> **Monorepo Turborepo (23/09)** : Strapi vit désormais dans `apps/backend/` et le front dans `apps/frontend/`.
+> Les chemins de ce document ont été réécrits en conséquence ; un `.env` sans préfixe désigne `apps/backend/.env`.
+> Les commandes `npm run ...` se lancent depuis la racine du dépôt ; les extraits de `package.json` cités plus bas
+> sont ceux de `apps/backend/package.json`. `scripts/demo-start.mts` n'existe plus : `npm run demo:start` passe par
+> turbo. Détails : `docs/handoff/socle.md`, section « Monorepo Turborepo ».
 
-- Pourquoi : activer les crons et déclarer les deux tâches de `config/cron-tasks.ts`
+## 1. apps/backend/config/server.ts
+
+- Pourquoi : activer les crons et déclarer les deux tâches de `apps/backend/config/cron-tasks.ts`
   (publication programmée + récapitulatif des brouillons).
 - Changement exact (à coller tel quel) :
 
@@ -15,7 +21,7 @@ import cronTasks from './cron-tasks';
 À la place du commentaire `// [config request CRONS] ...` :
 
 ```ts
-  // Crons (config/cron-tasks.ts) : publication programmée + récapitulatif des brouillons
+  // Crons (apps/backend/config/cron-tasks.ts) : publication programmée + récapitulatif des brouillons
   cron: {
     enabled: true,
     tasks: cronTasks,
@@ -38,7 +44,7 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Server =>
     populateRelations: env.bool('WEBHOOKS_POPULATE_RELATIONS', false),
     // [config request WEBHOOKS] defaultHeaders: { Authorization: `Bearer ${env('WEBHOOK_SECRET')}` },
   },
-  // Crons (config/cron-tasks.ts) : publication programmée + récapitulatif des brouillons
+  // Crons (apps/backend/config/cron-tasks.ts) : publication programmée + récapitulatif des brouillons
   cron: {
     enabled: true,
     tasks: cronTasks,
@@ -57,14 +63,14 @@ export default config;
   récapitulatif toutes les minutes ; toute autre valeur = toutes les 5 min et tous les jours à 8 h (Europe/Paris).
 - Dépendances npm : aucune (Strapi 5.54 embarque `croner`).
 - Comment vérifier après application :
-  `npm run demo:start`, attendre 30 s, puis `tail logs/crons.log` (ligne `[cron publication ...]`)
+  `npm run demo:start`, attendre 30 s, puis `tail apps/backend/logs/crons.log` (ligne `[cron publication ...]`)
   et `npm run demo:check` (groupe CRONS, 3 contrôles verts).
 
 ## 2. .gitignore
 
-- Pourquoi : `logs/crons.log` ne doit pas être versionné.
+- Pourquoi : `apps/backend/logs/crons.log` ne doit pas être versionné.
 - Changement exact : **aucun**. Le `.gitignore` du SOCLE contient déjà `logs` (section Node.js)
-  et `*.log` (section Logs and databases). Vérifié : `git check-ignore logs/crons.log` répond `logs/crons.log`.
+  et `*.log` (section Logs and databases). Vérifié : `git check-ignore apps/backend/logs/crons.log` répond `apps/backend/logs/crons.log`.
 
 ## 3. .env.example
 

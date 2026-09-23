@@ -14,7 +14,7 @@ Durée : Illimité. Aucun droit sur Author, Category ni la Media Library.
 
 ### 1. Automatique : bootstrap du SOCLE (après intégration)
 
-`npm run demo:reset` puis démarrage : le bootstrap (`src/index.ts`) crée les deux tokens s'ils manquent et
+`npm run demo:reset` puis démarrage : le bootstrap (`apps/backend/src/index.ts`) crée les deux tokens s'ils manquent et
 impose les valeurs fixes de `.env`. Code et variables : `docs/handoff/config-requests/mcp.md`. Vérifié sur
 le port 1338 : après reset, les deux tokens fonctionnent avec les valeurs de `.env` ; un simple redémarrage
 ne crée pas de doublon.

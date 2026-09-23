@@ -1,5 +1,11 @@
 # Handoff MCP (phase 2)
 
+> **Monorepo Turborepo (23/09)** : Strapi vit désormais dans `apps/backend/` et le front dans `apps/frontend/`.
+> Les chemins de ce document ont été réécrits en conséquence ; un `.env` sans préfixe désigne `apps/backend/.env`.
+> Les commandes `npm run ...` se lancent depuis la racine du dépôt ; les extraits de `package.json` cités plus bas
+> sont ceux de `apps/backend/package.json`. `scripts/demo-start.mts` n'existe plus : `npm run demo:start` passe par
+> turbo. Détails : `docs/handoff/socle.md`, section « Monorepo Turborepo ».
+
 Serveur MCP natif de Strapi 5.54.0 (`/mcp`, transport Streamable HTTP sans état), piloté par Claude Code
 avec deux Admin tokens. Tout a été vérifié sur l'instance du worktree MCP (port 1338).
 
@@ -13,7 +19,7 @@ avec deux Admin tokens. Tout a été vérifié sur l'instance du worktree MCP (p
 | `docs/mcp/admin-tokens.md` | création des Admin tokens : bootstrap, API REST admin, parcours dans l'admin |
 | `docs/mcp/create-tokens.mjs` | création des 2 Admin tokens par l'API REST admin (`node`, aucune dépendance) |
 | `docs/mcp/mcp-curl.sh` | plan B : tout le scénario en JSON-RPC avec curl |
-| `scripts/checks/mcp.ts` | 4 contrôles MCP dans `npm run demo:check` |
+| `apps/backend/scripts/checks/mcp.ts` | 4 contrôles MCP dans `npm run demo:check` |
 | `docs/handoff/config-requests/mcp.md` | `mcp.enabled: true` + bootstrap des Admin tokens à valeur fixe + 2 variables `.env` |
 
 ## Ce qui marche (vérifié)
@@ -42,7 +48,7 @@ avec deux Admin tokens. Tout a été vérifié sur l'instance du worktree MCP (p
 ## Démo en 60 secondes
 
 ```bash
-set -a; . ./.env; set +a                       # exporte STRAPI_MCP_ADMIN_TOKEN et STRAPI_MCP_READONLY_TOKEN
+set -a; . apps/backend/.env; set +a                       # exporte STRAPI_MCP_ADMIN_TOKEN et STRAPI_MCP_READONLY_TOKEN
 claude --mcp-config .mcp.json.example --strict-mcp-config
 #   /mcp : "strapi" connecté
 #   « Liste les types de contenu que tu peux gérer, puis crée un brouillon d'article en français
@@ -104,9 +110,9 @@ Plan B sans modèle : `bash docs/mcp/mcp-curl.sh` (sortie réelle, port 1338) :
   jusqu'au redémarrage suivant (le bootstrap les réaligne).
 - **`mcp.enabled`** : pris en compte au démarrage uniquement, redémarrer Strapi. Désactivé = 405 sur POST.
 - **Redémarrage de Strapi pendant la démo** : pas de session MCP à perdre (sans état), Claude Code
-  reconnecte au prochain appel. Mais `strapi develop` recompile au moindre changement de `src/` ou `config/`.
+  reconnecte au prochain appel. Mais `strapi develop` recompile au moindre changement de `apps/backend/src/` ou `apps/backend/config/`.
 - **Noms des tools** : générés depuis le singularName du content-type (`article`). Renommer le type ou le
-  singularName renomme les tools (`list_<nom>`), et les prompts ou le check (`scripts/checks/mcp.ts`)
+  singularName renomme les tools (`list_<nom>`), et les prompts ou le check (`apps/backend/scripts/checks/mcp.ts`)
   deviennent faux. Attention, c'est `discard_article_draft` et non `discard_draft_article`.
 - **`update_article` exige `data.title`** même pour une mise à jour partielle (Claude le gère seul ;
   à savoir pour les appels curl). Les champs absents sont conservés.

@@ -1,13 +1,13 @@
 // Verification de la demo (Strapi doit tourner : npm run demo:start).
 // - controles du SOCLE : API fr/en avec cover, preview des brouillons, admin, webhook ;
 // - chargement automatique de scripts/checks/*.ts (un fichier par agent, voir scripts/checks/types.ts) ;
-// - aucun tiret cadratin (U+2014) dans le depot.
+// - aucun tiret cadratin (U+2014) dans tout le depot (racine du monorepo, apps/backend et apps/frontend).
 // Un seul login admin pour tous les controles, et le JWT est garde dans .tmp/ d'une execution a
 // l'autre (le login admin est limite a 5 essais par 5 min) : il n'est refait que s'il est refuse.
 // Code de sortie non nul si un controle echoue.
 import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, extname, join, relative } from 'node:path';
-import { ROOT, loadEnv } from './lib/env';
+import { REPO_ROOT, ROOT, loadEnv } from './lib/env';
 import type { CheckContext, CheckFn, CheckResult } from './checks/types';
 
 const env = loadEnv();
@@ -131,7 +131,7 @@ async function checkWebhook(): Promise<CheckResult> {
 // Aucun tiret cadratin dans le depot
 // ---------------------------------------------------------------------------
 const EM_DASH = String.fromCharCode(0x2014);
-const SKIP_DIRS = new Set(['node_modules', '.git', '.claude', '.next', '.tmp', 'dist', 'build', '.strapi', '.cache', 'uploads', 'data']);
+const SKIP_DIRS = new Set(['node_modules', '.git', '.claude', '.next', '.turbo', '.tmp', 'dist', 'build', '.strapi', '.cache', 'uploads', 'data']);
 const BINARY_EXT = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.ico', '.tar', '.gz', '.db', '.woff', '.woff2', '.pdf']);
 
 function findEmDashes(dir: string, found: string[] = []) {
@@ -143,7 +143,7 @@ function findEmDashes(dir: string, found: string[] = []) {
     } else if (!BINARY_EXT.has(extname(entry).toLowerCase()) && st.size < 5_000_000) {
       const lines = readFileSync(full, 'utf8').split('\n');
       lines.forEach((line, i) => {
-        if (line.includes(EM_DASH)) found.push(`${relative(ROOT, full)}:${i + 1}`);
+        if (line.includes(EM_DASH)) found.push(`${relative(REPO_ROOT, full)}:${i + 1}`);
       });
     }
   }
@@ -151,7 +151,7 @@ function findEmDashes(dir: string, found: string[] = []) {
 }
 
 async function checkNoEmDash(): Promise<CheckResult> {
-  const found = findEmDashes(ROOT);
+  const found = findEmDashes(REPO_ROOT);
   return {
     ok: found.length === 0,
     message: found.length === 0 ? 'Aucun tiret cadratin (U+2014) dans le dépôt' : `Tiret cadratin trouvé : ${found.slice(0, 10).join(', ')}`,

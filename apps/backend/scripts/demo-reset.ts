@@ -1,4 +1,4 @@
-// Remise a zero de la demo : base SQLite + uploads restaures depuis data/demo-export.tar.
+// Remise a zero de la demo : base SQLite + uploads restaures depuis data/demo-export.tar (chemins relatifs a apps/backend).
 // 1. refuse si Strapi tourne encore sur PORT (SQLite serait supprimee sous ses pieds) ;
 // 2. supprime la base et public/uploads ;
 // 3. `strapi import --force` (le bootstrap de src/index.ts recree admin, locales, tokens, webhook) ;
@@ -30,7 +30,7 @@ async function main() {
   const uploads = join(ROOT, 'public', 'uploads');
   mkdirSync(uploads, { recursive: true });
   for (const f of readdirSync(uploads)) if (f !== '.gitkeep') rmSync(join(uploads, f), { recursive: true, force: true });
-  // Logs d'une répétition précédente : récapitulatif des crons et journaux laissés par `strapi import`.
+  // Logs d'une répétition précédente : récapitulatif des crons et journaux laissés par `strapi import` / `export`.
   rmSync(join(ROOT, 'logs', 'crons.log'), { force: true });
   removeImportLogs();
   console.log(`[reset] Base, uploads et logs supprimés (${elapsed()})`);
@@ -66,7 +66,8 @@ async function main() {
 
 main();
 
-// `strapi import` écrit un fichier import_<date>.log à la racine à chaque restauration.
+// `strapi import` et `strapi export` écrivent un fichier import_<date>.log / export_<date>.log à la racine
+// de apps/backend à chaque exécution.
 function removeImportLogs() {
-  for (const f of readdirSync(ROOT)) if (/^import_.*\.log$/.test(f)) rmSync(join(ROOT, f), { force: true });
+  for (const f of readdirSync(ROOT)) if (/^(import|export)_.*\.log$/.test(f)) rmSync(join(ROOT, f), { force: true });
 }

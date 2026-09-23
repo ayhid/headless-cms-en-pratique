@@ -1,6 +1,12 @@
 # Config request : FRONT
 
-## 1. config/admin.ts
+> **Monorepo Turborepo (23/09)** : Strapi vit désormais dans `apps/backend/` et le front dans `apps/frontend/`.
+> Les chemins de ce document ont été réécrits en conséquence ; un `.env` sans préfixe désigne `apps/backend/.env`.
+> Les commandes `npm run ...` se lancent depuis la racine du dépôt ; les extraits de `package.json` cités plus bas
+> sont ceux de `apps/backend/package.json`. `scripts/demo-start.mts` n'existe plus : `npm run demo:start` passe par
+> turbo. Détails : `docs/handoff/socle.md`, section « Monorepo Turborepo ».
+
+## 1. apps/backend/config/admin.ts
 - Pourquoi : activer la fonctionnalité Preview de Strapi 5 pour que le bouton « Aperçu » du Content Manager
   ouvre le front Next.js en Draft Mode, sur la bonne locale et le bon slug (doc : https://docs.strapi.io/cms/features/preview.md).
 - Changement exact : remplacer la ligne commentée `// [config request FRONT] preview: ...` par le bloc suivant (à coller tel quel) :
@@ -34,12 +40,12 @@
   - `PREVIEW_ENABLED=true` (optionnelle, défaut `true`) : commentaire pour `.env.example` :
     `# Active le bouton Apercu du Content Manager (preview Strapi vers le front Next.js)`
   - Aucune autre : `FRONTEND_URL` et `PREVIEW_SECRET` existent déjà (racine) ; `PREVIEW_SECRET` doit rester
-    identique dans `.env` et `frontend/.env`.
+    identique dans `.env` et `apps/frontend/.env`.
 - Dépendances npm : aucune.
 - `npx tsc --noEmit` à la racine passe avec ce bloc (le global `strapi` est typé par `@strapi/types`).
 - Comment vérifier après application (Strapi redémarré, front lancé) :
 ```bash
-source .env
+source apps/backend/.env
 JWT=$(curl -s -X POST http://localhost:1337/admin/login -H 'Content-Type: application/json' \
   -d "{\"email\":\"$DEMO_ADMIN_EMAIL\",\"password\":\"$DEMO_ADMIN_PASSWORD\"}" | python3 -c 'import json,sys;print(json.load(sys.stdin)["data"]["token"])')
 DOC=$(curl -s -g "http://localhost:1337/api/articles?locale=fr&status=draft&filters[slug][\$eq]=brouillon-plugin-maison" \
@@ -67,6 +73,6 @@ final 200 http://localhost:3006/articles/brouillon-plugin-maison   (bandeau "Mod
 Content-Security-Policy: frame-src http://localhost:3006
 ```
 
-## 2. frontend/next.config.ts (information, aucun changement demandé)
+## 2. apps/frontend/next.config.ts (information, aucun changement demandé)
 `images.remotePatterns` n'est pas utilisé : le front affiche les images Strapi avec `<img>` (URL absolue construite
 depuis `STRAPI_URL`), ce qui marche quel que soit le port de Strapi. Rien à changer.

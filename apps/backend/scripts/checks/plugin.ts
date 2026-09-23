@@ -7,7 +7,8 @@
 //   (et pas editView.informations, zone interne), et quelles zones le Content Manager installé affiche ;
 // - tool MCP editorial_checklist listé par tools/list (seulement si le serveur MCP est activé).
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
 import type { CheckContext, CheckFn, CheckResult } from './types';
 
 const PLUGIN = 'editorial-toolkit';
@@ -63,7 +64,8 @@ async function checkRevealZones(ctx: CheckContext): Promise<CheckResult[]> {
   ];
 
   // Information : zones réellement affichées par le Content Manager installé (<InjectionZone area="...">).
-  const cmDir = join(ctx.root, 'node_modules', '@strapi', 'content-manager', 'dist', 'admin');
+  // Monorepo : paquet resolu comme le fait Node (node_modules de apps/backend ou de la racine du depot).
+  const cmDir = join(dirname(createRequire(join(ctx.root, 'package.json')).resolve('@strapi/content-manager/package.json')), 'dist', 'admin');
   const cmFiles = [
     'pages/ListView/ListViewPage.mjs',
     'pages/EditView/components/Panels.mjs',

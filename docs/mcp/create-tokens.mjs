@@ -6,12 +6,12 @@
 //   PORT=1338 node docs/mcp/create-tokens.mjs --recreate  # supprime puis recree les 2 tokens
 //
 // La valeur en clair d'un Admin token n'est renvoyee qu'une seule fois, a la creation : le script
-// l'affiche sous forme de lignes `export ...` a coller dans son shell (ou dans .env).
+// l'affiche sous forme de lignes `export ...` a coller dans son shell (ou dans apps/backend/.env).
 // Apres integration, le bootstrap du SOCLE cree ces memes tokens avec des valeurs FIXES
 // (voir docs/handoff/config-requests/mcp.md) : ce script sert alors a montrer l'API, ou de secours.
 //
-// Fichier en .mjs volontairement : un .ts dans docs/ serait compile par `strapi develop`
-// (tsconfig.json n'exclut pas docs/).
+// Fichier en .mjs volontairement (execute par node sans compilation). Depuis le monorepo, docs/ est hors
+// du projet Strapi (apps/backend) : `strapi develop` ne le voit plus. Lit apps/backend/.env.
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -20,7 +20,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 function loadEnv() {
   const values = {};
-  const file = join(ROOT, '.env');
+  const file = join(ROOT, 'apps', 'backend', '.env');
   if (existsSync(file)) {
     for (const line of readFileSync(file, 'utf8').split('\n')) {
       const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);

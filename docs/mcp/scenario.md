@@ -6,10 +6,10 @@ Répété réellement le 23/09/2026 avec `claude -p` (Claude Code 2.1.280) sur l
 
 ## Pré-requis
 
-- `mcp: { enabled: true }` dans `config/server.ts` et les deux Admin tokens dans `.env`
+- `mcp: { enabled: true }` dans `apps/backend/config/server.ts` et les deux Admin tokens dans `.env`
   (voir `docs/handoff/config-requests/mcp.md`), puis `npm run demo:reset` et `npm run demo:start`.
 - `npm run demo:check` : section MCP entièrement verte.
-- Dans le terminal de démo : `set -a; . ./.env; set +a` (exporte les tokens).
+- Dans le terminal de démo : `set -a; . apps/backend/.env; set +a` (exporte les tokens).
 - Admin ouvert sur Content Manager, Article, locale fr.
 
 ## Configuration du client (rien dans la config globale)

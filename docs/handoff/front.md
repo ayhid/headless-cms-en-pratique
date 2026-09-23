@@ -1,6 +1,12 @@
 # Handoff FRONT (phase 2)
 
-Front Next.js **16.3.6** (App Router, Turbopack, Tailwind 4), dans `frontend/`. Sans `cacheComponents`
+> **Monorepo Turborepo (23/09)** : Strapi vit désormais dans `apps/backend/` et le front dans `apps/frontend/`.
+> Les chemins de ce document ont été réécrits en conséquence ; un `.env` sans préfixe désigne `apps/backend/.env`.
+> Les commandes `npm run ...` se lancent depuis la racine du dépôt ; les extraits de `package.json` cités plus bas
+> sont ceux de `apps/backend/package.json`. `scripts/demo-start.mts` n'existe plus : `npm run demo:start` passe par
+> turbo. Détails : `docs/handoff/socle.md`, section « Monorepo Turborepo ».
+
+Front Next.js **16.3.6** (App Router, Turbopack, Tailwind 4), dans `apps/frontend/`. Sans `cacheComponents`
 (non activé dans `next.config.ts`), donc modèle de cache « précédent » : `fetch` + `next.tags`.
 
 ## Ce qui marche (vérifié en `next build && next start -p 3006` contre Strapi 1343, et en `next dev`)
@@ -18,14 +24,14 @@ Front Next.js **16.3.6** (App Router, Turbopack, Tailwind 4), dans `frontend/`. 
   (`populate[localizations][fields]=slug,locale`), sinon vers la liste de l'autre locale.
 - **SEO** : `generateMetadata` lit `shared.seo` (`metaTitle`, `metaDescription`, `shareImage`) avec repli sur
   title / excerpt / cover ; `og:image` absolue, `alternates.languages`, canonical.
-- **Tokens** : `frontend/lib/strapi.ts` est le seul endroit qui lit `STRAPI_READ_TOKEN` / `STRAPI_PREVIEW_TOKEN`,
+- **Tokens** : `apps/frontend/lib/strapi.ts` est le seul endroit qui lit `STRAPI_READ_TOKEN` / `STRAPI_PREVIEW_TOKEN`,
   uniquement côté serveur (pas de préfixe `NEXT_PUBLIC_`, `next/headers` importé, donc inutilisable dans un
   Client Component). Aucun token dans le HTML.
 - **Erreurs lisibles** : Strapi arrêté ou token refusé : encadré rouge « Impossible de charger les articles »
   avec la cause en français (« Strapi est injoignable sur http://localhost:1337 : lancer npm run demo:start »,
-  « Strapi refuse l'accès (HTTP 401) : vérifier STRAPI_READ_TOKEN dans frontend/.env »). Jamais le token.
+  « Strapi refuse l'accès (HTTP 401) : vérifier STRAPI_READ_TOKEN dans apps/frontend/.env »). Jamais le token.
 - **404** propre (« Article introuvable ») pour un slug inconnu ou un brouillon hors aperçu (statut HTTP 404).
-- `npx tsc --noEmit` et `npx eslint .` passent dans `frontend/`.
+- `npx tsc --noEmit` et `npx eslint .` passent dans `apps/frontend/`.
 
 ### Cache (mesuré)
 - Pages rendues à la requête (`await connection()`), données Strapi dans le **Data Cache** :
@@ -45,7 +51,7 @@ Front Next.js **16.3.6** (App Router, Turbopack, Tailwind 4), dans `frontend/`. 
 - sans `slug` : redirection vers la liste de la locale (en aperçu, elle montre aussi les brouillons).
 - Bandeau jaune collant « Mode aperçu : brouillon » + bouton « Quitter l'aperçu » sur toutes les pages,
   badge « Brouillon » à la place de la date pour un article jamais publié.
-- La config Strapi (`preview` dans `config/admin.ts`) est dans `docs/handoff/config-requests/front.md`,
+- La config Strapi (`preview` dans `apps/backend/config/admin.ts`) est dans `docs/handoff/config-requests/front.md`,
   testée localement puis retirée avant commit.
 
 Sorties réelles (production, Strapi 1343, front 3006) :
@@ -84,7 +90,7 @@ Tout est vert : 12/12 OK
 
 ## Ce que WEBHOOKS doit appeler (Next 16.3.6)
 
-Signature (source : `frontend/node_modules/next/dist/docs/01-app/03-api-reference/04-functions/revalidateTag.md`) :
+Signature (source : `apps/frontend/node_modules/next/dist/docs/01-app/03-api-reference/04-functions/revalidateTag.md`) :
 ```ts
 revalidateTag(tag: string, profile: string | { expire?: number }): void;
 ```
@@ -105,8 +111,8 @@ Donc pour la démo en direct : `{ expire: 0 }`, pas `'max'`. Le payload du webho
 son tag). En cas de doute, revalider aussi `articles` couvre les deux listes.
 
 ## Attentes vis-à-vis de CONTENU
-- `frontend/components/blocks/index.tsx` doit continuer d'exporter `Blocks({ blocks })` et le type `StrapiBlock`
-  (importé par `frontend/lib/strapi.ts`). Si le type change de nom, le build casse.
+- `apps/frontend/components/blocks/index.tsx` doit continuer d'exporter `Blocks({ blocks })` et le type `StrapiBlock`
+  (importé par `apps/frontend/lib/strapi.ts`). Si le type change de nom, le build casse.
 - Les blocs sont rendus dans un conteneur `text-xl leading-relaxed text-zinc-800`, colonne `max-w-3xl`, fond blanc :
   pas besoin de forcer la taille de texte, mais pas de thème sombre.
 - Les médias arrivent avec des URL relatives `/uploads/...` : utiliser `mediaUrl()` exporté par
@@ -123,9 +129,9 @@ son tag). En cas de doute, revalider aussi `articles` couvre les deux listes.
    (webhook de WEBHOOKS + `revalidateTag(..., { expire: 0 })`).
 
 ## Ce qui casse si on touche à quoi
-- **`STRAPI_URL`** (`frontend/.env`, forcé par `demo:start`) : les images sont servies depuis cette URL au
+- **`STRAPI_URL`** (`apps/frontend/.env`, forcé par `demo:start`) : les images sont servies depuis cette URL au
   navigateur ; Strapi doit être joignable à la même adresse depuis le navigateur et depuis Next.
-- **`PREVIEW_SECRET`** : doit être identique dans `.env` (Strapi, handler de preview) et `frontend/.env`, sinon 401.
+- **`PREVIEW_SECRET`** : doit être identique dans `.env` (Strapi, handler de preview) et `apps/frontend/.env`, sinon 401.
 - **`FRONTEND_URL`** côté Strapi : sert d'URL de base au bouton Aperçu **et** à `allowedOrigins` (CSP `frame-src`
   de l'admin). Mauvaise valeur : iframe bloquée ou mauvais port.
 - **Tags** `articles` / `article:<slug>` : les renommer dans `lib/strapi.ts` casse la revalidation de WEBHOOKS sans erreur visible.

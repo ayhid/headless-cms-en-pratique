@@ -80,8 +80,8 @@ $RECYCLE.BIN/
 ssl
 .idea
 nbproject
-public/uploads/*
-!public/uploads/.gitkeep
+apps/backend/public/uploads/*
+!apps/backend/public/uploads/.gitkeep
 .tsbuildinfo
 .eslintcache
 
@@ -134,10 +134,23 @@ build
 ############################
 
 # L'export de demo est versionne malgre la regle *.tar ci-dessus
-!data/demo-export.tar
-frontend/node_modules
-frontend/.next
-frontend/.env
+!apps/backend/data/demo-export.tar
+
+############################
+# Monorepo Turborepo (apps/backend, apps/frontend)
+############################
+
+# node_modules a la racine ET dans chaque app (react 19 et next restent dans apps/frontend/node_modules)
+node_modules/
+.turbo/
+apps/frontend/.next/
+apps/frontend/logs/
+apps/backend/.tmp/
+apps/backend/logs/
+apps/backend/.env
+apps/frontend/.env
+import_*.log
+export_*.log
 
 ############################
 # Claude Code
