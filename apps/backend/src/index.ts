@@ -160,6 +160,16 @@ export const MCP_ADMIN_TOKENS = [
   },
 ] as const;
 
+type TokenPermission = { action: string; subject?: string | null; properties?: { locales?: string[] } | null };
+
+// Empreinte comparable d'une liste de permissions : action, subject et locales, dans un ordre stable.
+function permissionsSignature(permissions: TokenPermission[] | null | undefined) {
+  return (permissions ?? [])
+    .map((p) => `${p.action}|${p.subject ?? ''}|${[...(p.properties?.locales ?? [])].sort().join(',')}`)
+    .sort()
+    .join(';');
+}
+
 async function ensureMcpAdminTokens(strapi: Core.Strapi) {
   // Meme technique que ensureApiTokens : creation par le service officiel (qui gere les permissions
   // admin et le proprietaire), puis accessKey/encryptedKey realignes sur .env via le Query Engine.
@@ -181,24 +191,29 @@ async function ensureMcpAdminTokens(strapi: Core.Strapi) {
       strapi.log.warn(`${LOG_PREFIX} ${def.env} absent de .env : Admin token "${def.name}" ignoré`);
       continue;
     }
-    let token = await strapi.db.query('admin::api-token').findOne({ where: { name: def.name } });
+    const adminPermissions = def.actions.map((action) => ({
+      action: `plugin::content-manager.explorer.${action}`,
+      subject: 'api::article.article',
+      // Sans `locales`, le MCP refuse le parametre locale ; sans `fields`, tous les champs.
+      properties: { locales: ['fr', 'en'] },
+    }));
+    let token = await strapi.db.query('admin::api-token').findOne({
+      where: { name: def.name },
+      populate: ['adminPermissions'],
+    });
     if (!token) {
       token = await tokenService.create(
-        {
-          kind: 'admin',
-          name: def.name,
-          description: def.description,
-          lifespan: null,
-          adminPermissions: def.actions.map((action) => ({
-            action: `plugin::content-manager.explorer.${action}`,
-            subject: 'api::article.article',
-            // Sans `locales`, le MCP refuse le parametre locale ; sans `fields`, tous les champs.
-            properties: { locales: ['fr', 'en'] },
-          })),
-        },
+        { kind: 'admin', name: def.name, description: def.description, lifespan: null, adminPermissions },
         owner,
       );
       strapi.log.info(`${LOG_PREFIX} Admin token MCP créé : ${def.name}`);
+    } else if (permissionsSignature(token.adminPermissions) !== permissionsSignature(adminPermissions)) {
+      // Resynchronisation a chaque demarrage : si quelqu'un a modifie les droits du token dans
+      // l'admin, les tools MCP exposes changent (constate le 23/09 : users et categories exposes,
+      // create_article absent). On remet exactement les permissions attendues via le service
+      // officiel, qui plafonne toujours aux droits du proprietaire.
+      await tokenService.update(token.id, { adminPermissions });
+      strapi.log.info(`${LOG_PREFIX} permissions de l'Admin token "${def.name}" resynchronisées`);
     }
     const hashed = tokenService.hash(value);
     if (token.accessKey !== hashed) {

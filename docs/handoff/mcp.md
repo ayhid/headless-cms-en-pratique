@@ -94,8 +94,12 @@ Plan B sans modèle : `bash docs/mcp/mcp-curl.sh` (sortie réelle, port 1338) :
 - **Permissions du token** : les tools visibles sont recalculés à chaque requête (sans état). Retirer
   `delete` fait disparaître `delete_article` au prochain appel, sans redémarrage (vérifié :
   `PUT /admin/admin-tokens/:id` sans delete, puis `tools/list` passe de 9 à 8 tools ; remis ensuite).
-  Si le bootstrap est en place, il ne réaligne pas les permissions d'un token existant : seul
-  `demo:reset` les remet d'aplomb. **Oublier les locales**
+  Le bootstrap (`ensureMcpAdminTokens` dans `apps/backend/src/index.ts`) resynchronise les
+  permissions des deux Admin tokens MCP à chaque démarrage de Strapi : une modification faite dans
+  l'admin est annulée au redémarrage suivant, avec la ligne « permissions de l'Admin token ...
+  resynchronisées » dans les logs (vérifié le 23/09 : token dégradé par `PUT /admin/admin-tokens/5`,
+  redémarrage, 10 tools rétablis ; aucun log au démarrage suivant). Pendant que Strapi tourne, une
+  modification reste active jusqu'au redémarrage. **Oublier les locales**
   dans les permissions (`properties.locales`) laisse les tools visibles mais interdit le paramètre `locale`
   (« No locale access for this action. ») : plus de création en fr. Dans l'admin, déplier la ligne Article
   et vérifier Locales.
