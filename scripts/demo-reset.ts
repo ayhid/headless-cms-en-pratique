@@ -20,7 +20,7 @@ function run(cmd: string, args: string[]) {
 async function main() {
   const port = Number(env.PORT || 1337);
   if (await isPortInUse(port)) {
-    console.error(`[reset] Un serveur ecoute deja sur le port ${port}. Arretez Strapi avant la remise a zero.`);
+    console.error(`[reset] Un serveur écoute déjà sur le port ${port}. Arrêtez Strapi avant la remise à zéro.`);
     process.exit(1);
   }
 
@@ -30,7 +30,7 @@ async function main() {
   const uploads = join(ROOT, 'public', 'uploads');
   mkdirSync(uploads, { recursive: true });
   for (const f of readdirSync(uploads)) if (f !== '.gitkeep') rmSync(join(uploads, f), { recursive: true, force: true });
-  console.log(`[reset] Base et uploads supprimes (${elapsed()})`);
+  console.log(`[reset] Base et uploads supprimés (${elapsed()})`);
 
   const archive = join(ROOT, 'data', 'demo-export.tar');
   let mode = 'import';
@@ -40,8 +40,8 @@ async function main() {
     if (!res.ok) {
       mode = 'seed';
       const reason = res.out.split('\n').filter((l) => /error|schema/i.test(l)).slice(0, 3).join('\n');
-      console.warn(`[reset] Import impossible (schemas modifies depuis l'export ?) :\n${reason}`);
-      console.warn('[reset] Repli sur le seed complet. Pensez a regenerer l\'export : npm run demo:export');
+      console.warn(`[reset] Import impossible (schémas modifiés depuis l'export ?) :\n${reason}`);
+      console.warn('[reset] Repli sur le seed complet. Pensez à régénérer l\'export : npm run demo:export');
     }
   } else {
     mode = 'seed';
@@ -52,12 +52,12 @@ async function main() {
     for (const suffix of ['', '-wal', '-shm', '-journal']) rmSync(dbFile + suffix, { force: true });
     const res = spawnSync('npx', ['tsx', 'scripts/seed/index.ts'], { cwd: ROOT, stdio: 'inherit' });
     if (res.status !== 0) {
-      console.error('[reset] Echec du seed.');
+      console.error('[reset] Échec du seed.');
       process.exit(1);
     }
   }
 
-  console.log(`[reset] Termine en ${elapsed()} (mode : ${mode}). Lancer ensuite : npm run demo:start`);
+  console.log(`[reset] Terminé en ${elapsed()} (mode : ${mode}). Lancer ensuite : npm run demo:start`);
 }
 
 main();

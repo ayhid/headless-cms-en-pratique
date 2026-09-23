@@ -40,6 +40,12 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
       },
     },
   },
+  // Plugin local "Boîte à outils éditoriale" (src/plugins/editorial-toolkit).
+  // Il est chargé depuis son dossier dist/ : lancer `npm run plugin:build` après chaque modification.
+  'editorial-toolkit': {
+    enabled: true,
+    resolve: './src/plugins/editorial-toolkit',
+  },
 });
 
 export default config;

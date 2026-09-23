@@ -28,17 +28,17 @@ type ArticleSeed = {
 const AUTHORS = [
   {
     name: 'Camille Verdier',
-    bio: 'Architecte front chez Lumen Studio (societe fictive). Parle de performances web et de cache.',
+    bio: 'Architecte front chez Lumen Studio (société fictive). Parle de performances web et de cache.',
     avatar: 'avatar-1.png',
   },
   {
     name: 'Yanis Morel',
-    bio: 'Developpeur back-end chez Atelier Nordik (societe fictive). Adore les API bien typees.',
+    bio: 'Développeur back-end chez Atelier Nordik (société fictive). Adore les API bien typées.',
     avatar: 'avatar-2.png',
   },
   {
     name: 'Ines Carvalho',
-    bio: 'Responsable editoriale chez Maison Pixel (societe fictive). Fait le lien entre redaction et tech.',
+    bio: 'Responsable éditoriale chez Maison Pixel (société fictive). Fait le lien entre rédaction et tech.',
     avatar: 'avatar-3.png',
   },
 ];
@@ -46,7 +46,7 @@ const AUTHORS = [
 const CATEGORIES = [
   { fr: { name: 'Architecture', slug: 'architecture' }, en: { name: 'Architecture', slug: 'architecture-en' } },
   { fr: { name: 'Front-end', slug: 'front-end' }, en: { name: 'Front-end', slug: 'front-end-en' } },
-  { fr: { name: 'Editorial', slug: 'editorial' }, en: { name: 'Editorial', slug: 'editorial-en' } },
+  { fr: { name: 'Éditorial', slug: 'editorial' }, en: { name: 'Editorial', slug: 'editorial-en' } },
 ];
 
 const ARTICLES: ArticleSeed[] = [
@@ -58,12 +58,12 @@ const ARTICLES: ArticleSeed[] = [
     category: 0,
     fr: {
       title: 'Pourquoi un CMS headless ?',
-      excerpt: 'Separer le contenu de sa presentation : ce que cela change pour une equipe produit.',
+      excerpt: 'Séparer le contenu de sa présentation : ce que cela change pour une équipe produit.',
       body: [
-        'Un CMS headless expose le contenu via une API au lieu de generer des pages.',
-        'Le front devient un client comme un autre, au meme titre qu une application mobile.',
+        'Un CMS headless expose le contenu via une API au lieu de générer des pages.',
+        'Le front devient un client comme un autre, au même titre qu’une application mobile.',
       ],
-      quote: 'Le contenu est une donnee, pas une page.',
+      quote: 'Le contenu est une donnée, pas une page.',
     },
     en: {
       title: 'Why a headless CMS?',
@@ -83,10 +83,10 @@ const ARTICLES: ArticleSeed[] = [
     category: 0,
     fr: {
       title: 'Le Document Service de Strapi 5',
-      excerpt: 'documentId, brouillons et versions publiees : le nouveau modele mental.',
+      excerpt: 'documentId, brouillons et versions publiées : le nouveau modèle mental.',
       body: [
-        'Un document regroupe toutes les variantes d un contenu : locales, brouillon et version publiee.',
-        'Le Document Service remplace l Entity Service et travaille avec un documentId stable.',
+        'Un document regroupe toutes les variantes d’un contenu : locales, brouillon et version publiée.',
+        'Le Document Service remplace l’Entity Service et travaille avec un documentId stable.',
       ],
       quote: 'Un documentId, plusieurs versions.',
     },
@@ -107,11 +107,11 @@ const ARTICLES: ArticleSeed[] = [
     author: 0,
     category: 1,
     fr: {
-      title: 'Revalidation a la demande avec Next.js',
-      excerpt: 'Un webhook Strapi, un tag de cache, et la page se met a jour sans rebuild.',
+      title: 'Revalidation à la demande avec Next.js',
+      excerpt: 'Un webhook Strapi, un tag de cache, et la page se met à jour sans rebuild.',
       body: [
-        'Chaque publication declenche un webhook vers le front.',
-        'Le front invalide uniquement les tags concernes : la liste et le detail de l article.',
+        'Chaque publication déclenche un webhook vers le front.',
+        'Le front invalide uniquement les tags concernés : la liste et le détail de l’article.',
       ],
       quote: 'Invalider peu, mais au bon moment.',
     },
@@ -132,13 +132,13 @@ const ARTICLES: ArticleSeed[] = [
     author: 2,
     category: 2,
     fr: {
-      title: 'Modeliser avec des composants et des zones dynamiques',
-      excerpt: 'Donner de la liberte aux redacteurs sans perdre la structure.',
+      title: 'Modéliser avec des composants et des zones dynamiques',
+      excerpt: 'Donner de la liberté aux rédacteurs sans perdre la structure.',
       body: [
-        'Les composants sont des groupes de champs reutilisables.',
-        'Les zones dynamiques laissent la redaction assembler une page bloc par bloc.',
+        'Les composants sont des groupes de champs réutilisables.',
+        'Les zones dynamiques laissent la rédaction assembler une page bloc par bloc.',
       ],
-      quote: 'De la liberte, dans un cadre.',
+      quote: 'De la liberté, dans un cadre.',
     },
     en: {
       title: 'Modeling with components and dynamic zones',
@@ -158,12 +158,12 @@ const ARTICLES: ArticleSeed[] = [
     category: 0,
     fr: {
       title: 'Strapi et les agents IA via MCP',
-      excerpt: 'Un serveur MCP natif pour laisser un agent lire et ecrire du contenu, avec des permissions.',
+      excerpt: 'Un serveur MCP natif pour laisser un agent lire et écrire du contenu, avec des permissions.',
       body: [
-        'Le protocole MCP standardise la facon dont un agent appelle des outils.',
-        'Strapi expose ses content-types comme des outils, filtres par les permissions du token.',
+        'Le protocole MCP standardise la façon dont un agent appelle des outils.',
+        'Strapi expose ses content-types comme des outils, filtrés par les permissions du token.',
       ],
-      quote: 'Un agent n a que les droits de son token.',
+      quote: 'Un agent n’a que les droits de son token.',
     },
     en: {
       title: 'Strapi and AI agents through MCP',
@@ -182,10 +182,10 @@ const ARTICLES: ArticleSeed[] = [
     author: 2,
     category: 1,
     fr: {
-      title: 'Brouillon : ecrire son propre plugin',
-      excerpt: 'Article en cours de redaction, jamais publie (sert a la demo de preview).',
-      body: ['Un plugin Strapi peut ajouter des routes, des services et des pages d admin.'],
-      quote: 'Etendre plutot que contourner.',
+      title: 'Brouillon : écrire son propre plugin',
+      excerpt: 'Article en cours de rédaction, jamais publié (sert à la démo de l’aperçu).',
+      body: ['Un plugin Strapi peut ajouter des routes, des services et des pages d’admin.'],
+      quote: 'Étendre plutôt que contourner.',
     },
     en: {
       title: 'Draft: writing your own plugin',
@@ -201,9 +201,9 @@ const ARTICLES: ArticleSeed[] = [
     author: 0,
     category: 2,
     fr: {
-      title: 'Publication programmee par un cron',
-      excerpt: 'Brouillon dont la date publishAt est deja passee : le cron doit le publier.',
-      body: ['Un cron Strapi parcourt les brouillons et publie ceux dont la date est depassee.'],
+      title: 'Publication programmée par un cron',
+      excerpt: 'Brouillon dont la date publishAt est déjà passée : le cron doit le publier.',
+      body: ['Un cron Strapi parcourt les brouillons et publie ceux dont la date est dépassée.'],
       quote: 'Le bon contenu, au bon moment.',
     },
     en: {
@@ -224,6 +224,9 @@ function articleData(seed: ArticleSeed, locale: 'fr' | 'en', refs: Record<string
     cover: refs.cover.id,
     author: refs.author.documentId,
     category: refs.category.documentId,
+    // Ton editorial (custom field du plugin editorial-toolkit) : rempli pour les articles publies,
+    // laisse vide sur les brouillons (la demo le remplit en direct)
+    tone: seed.state === 'published' ? ['factuel', 'pedagogique', 'enthousiaste', 'decale'][seed.author % 4] : null,
     publishAt: seed.state === 'scheduled' ? new Date(Date.now() - 60 * 60 * 1000).toISOString() : null,
     blocks: [
       { __component: 'blocks.rich-text', body: [heading(l.title), ...paragraphs(...l.body)] },
@@ -244,7 +247,7 @@ async function seedSocle(strapi: Core.Strapi, helpers: ReturnType<typeof createH
   for (const c of CATEGORIES) {
     const created = await strapi.documents(CATEGORY).create({
       locale: 'fr',
-      data: { ...c.fr, seo: { metaTitle: c.fr.name, metaDescription: `Articles de la categorie ${c.fr.name}` } },
+      data: { ...c.fr, seo: { metaTitle: c.fr.name, metaDescription: `Articles de la catégorie ${c.fr.name}` } },
     });
     await strapi.documents(CATEGORY).update({
       documentId: created.documentId,
@@ -292,10 +295,10 @@ async function main() {
     const helpers = createHelpers(strapi);
     const existing = await strapi.documents(ARTICLE).count({ locale: 'fr' });
     if (existing > 0 && !force) {
-      console.log(`Seed ignore : ${existing} article(s) deja presents (utiliser --force pour forcer).`);
+      console.log(`Seed ignoré : ${existing} article(s) déjà présent(s) (utiliser --force pour forcer).`);
       return;
     }
-    console.log('Seed SOCLE : auteurs, categories, articles fr/en, images...');
+    console.log('Seed SOCLE : auteurs, catégories, articles fr/en, images...');
     await seedSocle(strapi, helpers);
     for (const { name, fn } of await loadAgentSeeds()) {
       console.log(`Seed agent : ${name}`);
@@ -303,7 +306,7 @@ async function main() {
     }
     const published = await strapi.documents(ARTICLE).count({ locale: 'fr', status: 'published' });
     const publishedEn = await strapi.documents(ARTICLE).count({ locale: 'en', status: 'published' });
-    console.log(`Seed termine : ${published} article(s) publies en fr, ${publishedEn} en en.`);
+    console.log(`Seed terminé : ${published} article(s) publié(s) en fr, ${publishedEn} en en.`);
   } finally {
     await strapi.destroy();
   }
@@ -312,7 +315,7 @@ async function main() {
 main().then(
   () => process.exit(0),
   (err) => {
-    console.error('Echec du seed :', err);
+    console.error('Échec du seed :', err);
     process.exit(1);
   },
 );

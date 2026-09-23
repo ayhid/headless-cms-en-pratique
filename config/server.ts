@@ -1,4 +1,5 @@
 import type { Core } from '@strapi/strapi';
+import cronTasks from './cron-tasks';
 
 const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Server => ({
   host: env('HOST', '0.0.0.0'),
@@ -6,14 +7,19 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Server =>
   app: {
     keys: env.array('APP_KEYS')!,
   },
+  // Webhooks : chaque appel porte le secret partagé avec le front (config request WEBHOOKS).
+  // populateRelations n'existe plus en Strapi 5 : option retirée.
   webhooks: {
-    populateRelations: env.bool('WEBHOOKS_POPULATE_RELATIONS', false),
-    // [config request WEBHOOKS] defaultHeaders: { Authorization: `Bearer ${env('WEBHOOK_SECRET')}` },
+    defaultHeaders: { Authorization: `Bearer ${env('WEBHOOK_SECRET')}` },
   },
-  // [config request CRONS] cron: { enabled: true, tasks: cronTasks },  (import depuis ./cron-tasks)
-  // [config request MCP] mcp: { enabled: true },
+  // Crons (config/cron-tasks.ts) : publication programmée + récapitulatif des brouillons (config request CRONS)
+  cron: {
+    enabled: true,
+    tasks: cronTasks,
+  },
+  // Serveur MCP natif, endpoint /mcp, Admin token obligatoire (config request MCP)
   mcp: {
-    enabled: false,
+    enabled: true,
   },
 });
 

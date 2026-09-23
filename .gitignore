@@ -138,3 +138,10 @@ build
 frontend/node_modules
 frontend/.next
 frontend/.env
+
+############################
+# Claude Code
+############################
+
+# Worktrees des agents de phase 2 (git worktree, jamais versionnés)
+.claude/worktrees/

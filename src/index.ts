@@ -7,6 +7,7 @@ import type { Core } from '@strapi/strapi';
  *  - les locales fr (par defaut) et en ;
  *  - le super admin de demo (DEMO_ADMIN_EMAIL / DEMO_ADMIN_PASSWORD), admin en francais ;
  *  - deux API tokens aux valeurs FIXES venant de .env (STRAPI_READ_TOKEN, STRAPI_PREVIEW_TOKEN) ;
+ *  - deux Admin tokens MCP aux valeurs FIXES (STRAPI_MCP_ADMIN_TOKEN, STRAPI_MCP_READONLY_TOKEN) ;
  *  - le webhook de revalidation vers FRONTEND_URL/api/revalidate.
  *
  * Ces elements ne sont pas embarques par `strapi export` (admins et tokens exclus),
@@ -19,13 +20,13 @@ export const DEMO_TOKENS = [
   {
     env: 'STRAPI_READ_TOKEN',
     name: 'Front (lecture seule)',
-    description: 'Token read-only utilise par le front Next.js. Valeur imposee depuis .env par le bootstrap.',
+    description: 'Token read-only utilisé par le front Next.js. Valeur imposée depuis .env par le bootstrap.',
   },
   {
     env: 'STRAPI_PREVIEW_TOKEN',
     name: 'Preview (brouillons)',
     description:
-      'Token read-only dedie a la preview : lecture des brouillons via ?status=draft. Valeur imposee depuis .env par le bootstrap.',
+      'Token read-only dédié à l’aperçu : lecture des brouillons via ?status=draft. Valeur imposée depuis .env par le bootstrap.',
   },
 ] as const;
 
@@ -41,13 +42,13 @@ async function ensureLocales(strapi: Core.Strapi) {
     const existing = await locales.findByCode(locale.code);
     if (!existing) {
       await locales.create(locale);
-      strapi.log.info(`${LOG_PREFIX} locale ${locale.code} creee`);
+      strapi.log.info(`${LOG_PREFIX} locale ${locale.code} créée`);
     }
   }
   const current = await locales.getDefaultLocale();
   if (current !== 'fr') {
     await locales.setDefaultLocale({ code: 'fr' });
-    strapi.log.info(`${LOG_PREFIX} locale par defaut : fr`);
+    strapi.log.info(`${LOG_PREFIX} locale par défaut : fr`);
   }
 }
 
@@ -55,7 +56,7 @@ async function ensureDemoAdmin(strapi: Core.Strapi) {
   const email = process.env.DEMO_ADMIN_EMAIL;
   const password = process.env.DEMO_ADMIN_PASSWORD;
   if (!email || !password) {
-    strapi.log.warn(`${LOG_PREFIX} DEMO_ADMIN_EMAIL / DEMO_ADMIN_PASSWORD absents : pas d'admin de demo`);
+    strapi.log.warn(`${LOG_PREFIX} DEMO_ADMIN_EMAIL / DEMO_ADMIN_PASSWORD absents : pas d'admin de démo`);
     return;
   }
   const userService = strapi.service('admin::user');
@@ -64,7 +65,7 @@ async function ensureDemoAdmin(strapi: Core.Strapi) {
 
   const superAdminRole = await strapi.service('admin::role').getSuperAdmin();
   if (!superAdminRole) {
-    strapi.log.warn(`${LOG_PREFIX} role super admin introuvable, admin de demo non cree`);
+    strapi.log.warn(`${LOG_PREFIX} rôle super admin introuvable, admin de démo non créé`);
     return;
   }
   await userService.create({
@@ -77,7 +78,7 @@ async function ensureDemoAdmin(strapi: Core.Strapi) {
     roles: [superAdminRole.id],
     preferedLanguage: 'fr',
   });
-  strapi.log.info(`${LOG_PREFIX} admin de demo cree : ${email}`);
+  strapi.log.info(`${LOG_PREFIX} admin de démo créé : ${email}`);
 }
 
 async function ensureApiTokens(strapi: Core.Strapi) {
@@ -92,7 +93,7 @@ async function ensureApiTokens(strapi: Core.Strapi) {
   for (const def of DEMO_TOKENS) {
     const value = process.env[def.env];
     if (!value) {
-      strapi.log.warn(`${LOG_PREFIX} ${def.env} absent de .env : token "${def.name}" ignore`);
+      strapi.log.warn(`${LOG_PREFIX} ${def.env} absent de .env : token "${def.name}" ignoré`);
       continue;
     }
     let token = await strapi.db.query('admin::api-token').findOne({ where: { name: def.name } });
@@ -103,7 +104,7 @@ async function ensureApiTokens(strapi: Core.Strapi) {
         type: 'read-only',
         lifespan: null,
       });
-      strapi.log.info(`${LOG_PREFIX} API token cree : ${def.name}`);
+      strapi.log.info(`${LOG_PREFIX} API token créé : ${def.name}`);
     }
     const hashed = tokenService.hash(value);
     if (token.accessKey !== hashed) {
@@ -111,7 +112,7 @@ async function ensureApiTokens(strapi: Core.Strapi) {
         where: { id: token.id },
         data: { accessKey: hashed, encryptedKey: encryption.encrypt(value) },
       });
-      strapi.log.info(`${LOG_PREFIX} valeur du token "${def.name}" alignee sur ${def.env}`);
+      strapi.log.info(`${LOG_PREFIX} valeur du token "${def.name}" alignée sur ${def.env}`);
     }
   }
 }
@@ -126,12 +127,12 @@ async function ensureWebhook(strapi: Core.Strapi) {
     if (existing.url !== url) {
       const updated = await store.updateWebhook(existing.id, { ...existing, url });
       strapi.get('webhookRunner').update(updated);
-      strapi.log.info(`${LOG_PREFIX} webhook mis a jour : ${url}`);
+      strapi.log.info(`${LOG_PREFIX} webhook mis à jour : ${url}`);
     }
     return;
   }
   // Le header Authorization n'est PAS pose ici : il vient de webhooks.defaultHeaders dans
-  // config/server.ts (config request de l'agent WEBHOOKS), pour garder le secret hors base.
+  // config/server.ts (Bearer WEBHOOK_SECRET), pour garder le secret hors base.
   const webhook = await store.createWebhook({
     name: WEBHOOK_NAME,
     url,
@@ -140,7 +141,74 @@ async function ensureWebhook(strapi: Core.Strapi) {
     isEnabled: true,
   });
   strapi.get('webhookRunner').add(webhook);
-  strapi.log.info(`${LOG_PREFIX} webhook cree : ${url}`);
+  strapi.log.info(`${LOG_PREFIX} webhook créé : ${url}`);
+}
+
+// Admin tokens du serveur MCP, a valeur FIXE venant de .env (config request MCP).
+export const MCP_ADMIN_TOKENS = [
+  {
+    env: 'STRAPI_MCP_ADMIN_TOKEN',
+    name: 'MCP Claude Code (complet)',
+    description: 'Admin token du serveur MCP : lecture, création, modification, publication et suppression des articles.',
+    actions: ['read', 'create', 'update', 'publish', 'delete'],
+  },
+  {
+    env: 'STRAPI_MCP_READONLY_TOKEN',
+    name: 'MCP lecture seule',
+    description: 'Admin token du serveur MCP : lecture des articles uniquement.',
+    actions: ['read'],
+  },
+] as const;
+
+async function ensureMcpAdminTokens(strapi: Core.Strapi) {
+  // Meme technique que ensureApiTokens : creation par le service officiel (qui gere les permissions
+  // admin et le proprietaire), puis accessKey/encryptedKey realignes sur .env via le Query Engine.
+  // Un Admin token appartient a un utilisateur admin : ici l'admin de demo (cree juste avant).
+  const email = process.env.DEMO_ADMIN_EMAIL;
+  const owner = email
+    ? await strapi.db.query('admin::user').findOne({ where: { email }, populate: ['roles'] })
+    : null;
+  if (!owner) {
+    strapi.log.warn(`${LOG_PREFIX} admin de démo introuvable : Admin tokens MCP ignorés`);
+    return;
+  }
+  const tokenService = strapi.service('admin::api-token-admin');
+  const encryption = strapi.service('admin::encryption');
+
+  for (const def of MCP_ADMIN_TOKENS) {
+    const value = process.env[def.env];
+    if (!value) {
+      strapi.log.warn(`${LOG_PREFIX} ${def.env} absent de .env : Admin token "${def.name}" ignoré`);
+      continue;
+    }
+    let token = await strapi.db.query('admin::api-token').findOne({ where: { name: def.name } });
+    if (!token) {
+      token = await tokenService.create(
+        {
+          kind: 'admin',
+          name: def.name,
+          description: def.description,
+          lifespan: null,
+          adminPermissions: def.actions.map((action) => ({
+            action: `plugin::content-manager.explorer.${action}`,
+            subject: 'api::article.article',
+            // Sans `locales`, le MCP refuse le parametre locale ; sans `fields`, tous les champs.
+            properties: { locales: ['fr', 'en'] },
+          })),
+        },
+        owner,
+      );
+      strapi.log.info(`${LOG_PREFIX} Admin token MCP créé : ${def.name}`);
+    }
+    const hashed = tokenService.hash(value);
+    if (token.accessKey !== hashed) {
+      await strapi.db.query('admin::api-token').update({
+        where: { id: token.id },
+        data: { accessKey: hashed, encryptedKey: encryption.encrypt(value) },
+      });
+      strapi.log.info(`${LOG_PREFIX} valeur de l'Admin token "${def.name}" alignée sur ${def.env}`);
+    }
+  }
 }
 
 export default {
@@ -150,6 +218,7 @@ export default {
     await ensureLocales(strapi);
     await ensureDemoAdmin(strapi);
     await ensureApiTokens(strapi);
+    await ensureMcpAdminTokens(strapi);
     await ensureWebhook(strapi);
   },
 };

@@ -2,15 +2,18 @@
 // - controles du SOCLE : API fr/en avec cover, preview des brouillons, admin, webhook ;
 // - chargement automatique de scripts/checks/*.ts (un fichier par agent, voir scripts/checks/types.ts) ;
 // - aucun tiret cadratin (U+2014) dans le depot.
+// Un seul login admin pour tous les controles, et le JWT est garde dans .tmp/ d'une execution a
+// l'autre (le login admin est limite a 5 essais par 5 min) : il n'est refait que s'il est refuse.
 // Code de sortie non nul si un controle echoue.
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { extname, join, relative } from 'node:path';
+import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { dirname, extname, join, relative } from 'node:path';
 import { ROOT, loadEnv } from './lib/env';
 import type { CheckContext, CheckFn, CheckResult } from './checks/types';
 
 const env = loadEnv();
 const strapiUrl = env.STRAPI_URL || `http://localhost:${env.PORT || 1337}`;
-const frontendUrl = env.FRONTEND_URL || `http://localhost:${env.FRONT_PORT || 3000}`;
+// Meme priorite que demo:start : FRONT_PORT l'emporte sur FRONTEND_URL.
+const frontendUrl = env.FRONT_PORT ? `http://localhost:${env.FRONT_PORT}` : env.FRONTEND_URL || 'http://localhost:3000';
 
 async function fetchJson(path: string, init: RequestInit & { token?: string } = {}) {
   const headers: Record<string, string> = { 'Content-Type': 'application/json', ...(init.headers as any) };
@@ -26,16 +29,39 @@ async function fetchJson(path: string, init: RequestInit & { token?: string } = 
   return { status: res.status, body };
 }
 
+const JWT_FILE = join(ROOT, '.tmp', `demo-check-admin-jwt-${new URL(strapiUrl).port || '80'}`);
 let adminJwtCache: string | null = null;
 async function adminJwt() {
   if (adminJwtCache) return adminJwtCache;
+  // JWT de l'execution precedente : reutilise s'il est encore accepte (meme base, meme secret)
+  try {
+    const saved = readFileSync(JWT_FILE, 'utf8').trim();
+    if (saved && (await fetchJson('/admin/users/me', { token: saved })).status === 200) {
+      adminJwtCache = saved;
+      return saved;
+    }
+  } catch {
+    // pas de JWT enregistre
+  }
   const res = await fetchJson('/admin/login', {
     method: 'POST',
     body: JSON.stringify({ email: env.DEMO_ADMIN_EMAIL, password: env.DEMO_ADMIN_PASSWORD }),
   });
   const token = res.body?.data?.token ?? res.body?.data?.accessToken;
-  if (!token) throw new Error(`login admin refuse (HTTP ${res.status})`);
+  if (!token) {
+    throw new Error(
+      res.status === 429
+        ? 'login admin refusé (HTTP 429, trop de connexions en 5 min) : attendre ou redémarrer Strapi'
+        : `login admin refusé (HTTP ${res.status})`,
+    );
+  }
   adminJwtCache = token as string;
+  try {
+    mkdirSync(dirname(JWT_FILE), { recursive: true });
+    writeFileSync(JWT_FILE, adminJwtCache);
+  } catch {
+    // cache facultatif
+  }
   return adminJwtCache;
 }
 
@@ -47,7 +73,7 @@ const ctx: CheckContext = { root: ROOT, env, strapiUrl, frontendUrl, fetchJson, 
 async function checkHealth(): Promise<CheckResult> {
   try {
     const res = await fetch(`${strapiUrl}/_health`);
-    return { ok: res.status === 204, message: `Strapi repond sur ${strapiUrl} (HTTP ${res.status})` };
+    return { ok: res.status === 204, message: `Strapi répond sur ${strapiUrl} (HTTP ${res.status})` };
   } catch {
     return { ok: false, message: `Strapi injoignable sur ${strapiUrl} : lancer npm run demo:start` };
   }
@@ -62,7 +88,7 @@ async function checkArticles(locale: 'fr' | 'en'): Promise<CheckResult> {
   const ok = items.length >= 5 && withCover.length === items.length && allLocale;
   return {
     ok,
-    message: `API ${locale} : ${items.length} article(s) publie(s), ${withCover.length} avec cover (token lecture seule)`,
+    message: `API ${locale} : ${items.length} article(s) publié(s), ${withCover.length} avec image de couverture (token lecture seule)`,
   };
 }
 
@@ -73,7 +99,7 @@ async function checkPreview(): Promise<CheckResult> {
   const nDraft = drafts.body?.meta?.pagination?.total ?? -1;
   return {
     ok: drafts.status === 200 && nDraft > nPub && nPub > 0,
-    message: `Token preview : ${nDraft} version(s) brouillon lisible(s) avec status=draft, contre ${nPub} publiee(s)`,
+    message: `Token preview : ${nDraft} version(s) brouillon lisible(s) avec status=draft, contre ${nPub} publiée(s)`,
   };
 }
 
@@ -105,7 +131,7 @@ async function checkWebhook(): Promise<CheckResult> {
 // Aucun tiret cadratin dans le depot
 // ---------------------------------------------------------------------------
 const EM_DASH = String.fromCharCode(0x2014);
-const SKIP_DIRS = new Set(['node_modules', '.git', '.next', '.tmp', 'dist', 'build', '.strapi', '.cache', 'uploads', 'data']);
+const SKIP_DIRS = new Set(['node_modules', '.git', '.claude', '.next', '.tmp', 'dist', 'build', '.strapi', '.cache', 'uploads', 'data']);
 const BINARY_EXT = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.ico', '.tar', '.gz', '.db', '.woff', '.woff2', '.pdf']);
 
 function findEmDashes(dir: string, found: string[] = []) {
@@ -128,7 +154,7 @@ async function checkNoEmDash(): Promise<CheckResult> {
   const found = findEmDashes(ROOT);
   return {
     ok: found.length === 0,
-    message: found.length === 0 ? 'Aucun tiret cadratin (U+2014) dans le depot' : `Tiret cadratin trouve : ${found.slice(0, 10).join(', ')}`,
+    message: found.length === 0 ? 'Aucun tiret cadratin (U+2014) dans le dépôt' : `Tiret cadratin trouvé : ${found.slice(0, 10).join(', ')}`,
   };
 }
 
@@ -146,7 +172,7 @@ async function runOne(group: string, name: string, fn: () => Promise<CheckResult
 }
 
 async function main() {
-  console.log(`Verification de la demo (Strapi : ${strapiUrl})\n`);
+  console.log(`Vérification de la démo (Strapi : ${strapiUrl}, front : ${frontendUrl})\n`);
   const results: Array<CheckResult & { group: string; name: string }> = [];
 
   const health = await runOne('socle', 'sante', checkHealth);
@@ -169,12 +195,15 @@ async function main() {
     const mod = await import(join(checksDir, file));
     const fn = (mod.default?.default ?? mod.default) as CheckFn;
     if (typeof fn !== 'function') {
-      results.push({ group: agent, name: file, ok: false, message: 'pas de fonction exportee par defaut' });
+      results.push({ group: agent, name: file, ok: false, message: 'pas de fonction exportée par défaut' });
       continue;
     }
     results.push(...(await runOne(agent, file, () => fn(ctx))));
   }
 
+  // Regroupe l'affichage par agent (scripts/checks/socle.ts rejoint la section SOCLE du debut)
+  const order = [...new Set(results.map((r) => r.group))];
+  results.sort((x, y) => order.indexOf(x.group) - order.indexOf(y.group));
   let currentGroup = '';
   for (const r of results) {
     if (r.group !== currentGroup) {
@@ -185,7 +214,7 @@ async function main() {
   }
   const failed = results.filter((r) => !r.ok).length;
   console.log(
-    `\n${failed === 0 ? 'Tout est vert' : `${failed} controle(s) en echec`} : ${results.length - failed}/${results.length} OK`,
+    `\n${failed === 0 ? 'Tout est vert' : `${failed} contrôle(s) en échec`} : ${results.length - failed}/${results.length} OK`,
   );
   process.exit(failed === 0 ? 0 : 1);
 }

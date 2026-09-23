@@ -43,6 +43,8 @@
     // Scripts de demo (executes par tsx), front Next.js et exports : hors compilation Strapi
     "scripts/",
     "frontend/",
-    "data/"
+    "data/",
+    // Documentation (scripts d'exemple de docs/mcp, etc.) : hors compilation Strapi
+    "docs/"
   ]
 }

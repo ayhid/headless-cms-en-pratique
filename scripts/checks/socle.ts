@@ -21,7 +21,7 @@ const check: CheckFn = async (ctx) => {
   return [
     {
       ok: gte(version, MIN_MCP_VERSION),
-      message: `Version Strapi ${version} (>= ${MIN_MCP_VERSION} requise pour le serveur MCP)`,
+      message: `Version Strapi ${version} (${MIN_MCP_VERSION} minimum requise pour le serveur MCP)`,
     },
   ];
 };

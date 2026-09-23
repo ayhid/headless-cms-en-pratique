@@ -14,6 +14,7 @@
     "slug": { "type": "uid", "targetField": "title", "pluginOptions": { "i18n": { "localized": true } } },
     "cover": { "type": "media", "multiple": false, "allowedTypes": ["images"], "pluginOptions": { "i18n": { "localized": false } } },
     "excerpt": { "type": "text", "pluginOptions": { "i18n": { "localized": true } } },
+    "tone": { "type": "customField", "customField": "plugin::editorial-toolkit.tone", "pluginOptions": { "i18n": { "localized": true } } },
     "author": { "type": "relation", "relation": "manyToOne", "target": "api::author.author", "inversedBy": "articles" },
     "category": { "type": "relation", "relation": "manyToOne", "target": "api::category.category", "inversedBy": "articles" },
     "blocks": { "type": "dynamiczone", "components": ["blocks.rich-text", "blocks.quote", "blocks.gallery"], "pluginOptions": { "i18n": { "localized": true } } },
