@@ -1,0 +1,56 @@
+{
+  "name": "editorial-toolkit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Boîte à outils éditoriale : champ personnalisé Ton éditorial, check-list de publication et tableau de bord.",
+  "keywords": [],
+  "license": "MIT",
+  "author": "Équipe démo <demo@example.com>",
+  "type": "commonjs",
+  "exports": {
+    "./package.json": "./package.json",
+    "./strapi-admin": {
+      "types": "./dist/admin/src/index.d.ts",
+      "source": "./admin/src/index.ts",
+      "import": "./dist/admin/index.mjs",
+      "require": "./dist/admin/index.js",
+      "default": "./dist/admin/index.js"
+    },
+    "./strapi-server": {
+      "types": "./dist/server/src/index.d.ts",
+      "source": "./server/src/index.ts",
+      "import": "./dist/server/index.mjs",
+      "require": "./dist/server/index.js",
+      "default": "./dist/server/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "strapi-plugin build",
+    "watch": "strapi-plugin watch",
+    "verify": "strapi-plugin verify",
+    "test:ts:front": "tsc -p admin/tsconfig.json",
+    "test:ts:back": "tsc -p server/tsconfig.json"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "@strapi/strapi": "^5.54.0",
+    "@strapi/utils": "^5.54.0",
+    "@strapi/sdk-plugin": "^6.1.1",
+    "@strapi/design-system": "^2.2.4",
+    "@strapi/icons": "^2.2.4",
+    "react-intl": "^6.6.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.3",
+    "styled-components": "^6.5.3"
+  },
+  "strapi": {
+    "kind": "plugin",
+    "name": "editorial-toolkit",
+    "displayName": "Boîte à outils éditoriale",
+    "description": "Ton éditorial, check-list de publication et tableau de bord éditorial."
+  }
+}
