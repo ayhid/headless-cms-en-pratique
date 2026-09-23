@@ -1,9 +1,14 @@
 {
   "collectionName": "components_blocks_quotes",
-  "info": { "displayName": "Quote", "icon": "quote", "description": "Squelette SOCLE, enrichi par CONTENU" },
+  "info": {
+    "displayName": "Citation",
+    "icon": "quote",
+    "description": "Citation mise en avant, avec son auteur et son rôle"
+  },
   "options": {},
   "attributes": {
-    "text": { "type": "text", "required": true },
-    "author": { "type": "string" }
+    "text": { "type": "text", "required": true, "maxLength": 500 },
+    "author": { "type": "string", "required": true, "maxLength": 120 },
+    "role": { "type": "string", "maxLength": 120 }
   }
 }

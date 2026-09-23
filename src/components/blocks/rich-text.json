@@ -1,8 +1,12 @@
 {
   "collectionName": "components_blocks_rich_texts",
-  "info": { "displayName": "Rich text", "icon": "align-left", "description": "Squelette SOCLE, enrichi par CONTENU" },
+  "info": {
+    "displayName": "Texte riche",
+    "icon": "write",
+    "description": "Paragraphes, titres, listes et liens rédigés dans l'éditeur riche"
+  },
   "options": {},
   "attributes": {
-    "body": { "type": "blocks" }
+    "body": { "type": "blocks", "required": true }
   }
 }

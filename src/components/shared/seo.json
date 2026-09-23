@@ -1,6 +1,10 @@
 {
   "collectionName": "components_shared_seos",
-  "info": { "displayName": "SEO", "icon": "search", "description": "Metadonnees SEO, partage entre article et category" },
+  "info": {
+    "displayName": "SEO",
+    "icon": "search",
+    "description": "Métadonnées SEO (titre, description, image de partage), partagées par l'article et la catégorie"
+  },
   "options": {},
   "attributes": {
     "metaTitle": { "type": "string", "maxLength": 70 },

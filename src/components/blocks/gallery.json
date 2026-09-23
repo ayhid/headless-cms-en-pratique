@@ -1,8 +1,13 @@
 {
   "collectionName": "components_blocks_galleries",
-  "info": { "displayName": "Gallery", "icon": "picture", "description": "Squelette SOCLE, enrichi par CONTENU" },
+  "info": {
+    "displayName": "Galerie",
+    "icon": "picture",
+    "description": "Plusieurs images affichées en grille, avec une légende commune"
+  },
   "options": {},
   "attributes": {
-    "images": { "type": "media", "multiple": true, "allowedTypes": ["images"] }
+    "images": { "type": "media", "multiple": true, "required": true, "allowedTypes": ["images"] },
+    "caption": { "type": "string", "maxLength": 200 }
   }
 }
