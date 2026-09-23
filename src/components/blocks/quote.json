@@ -1,0 +1,9 @@
+{
+  "collectionName": "components_blocks_quotes",
+  "info": { "displayName": "Quote", "icon": "quote", "description": "Squelette SOCLE, enrichi par CONTENU" },
+  "options": {},
+  "attributes": {
+    "text": { "type": "text", "required": true },
+    "author": { "type": "string" }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "collectionName": "components_blocks_rich_texts",
+  "info": { "displayName": "Rich text", "icon": "align-left", "description": "Squelette SOCLE, enrichi par CONTENU" },
+  "options": {},
+  "attributes": {
+    "body": { "type": "blocks" }
+  }
+}
