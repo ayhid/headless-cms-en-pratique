@@ -57,11 +57,11 @@ Expérience > Mode d'interface) ; zoom et colonne de droite du Content Manager a
 
 1. **Wifi et MCP** : la consigne « tout est local, on peut couper le wifi » est fausse pour l'étape MCP,
    Claude Code appelle le modèle sur Internet. DEMO.md le signale et propose `mcp-curl.sh` (local) en repli.
-2. `scripts/checks/front.ts` : libellés sans accents (« publie(s) affiche(s) », « Detail », « Apercu »),
+2. Corrigé : `scripts/checks/front.ts` : libellés sans accents (« publie(s) affiche(s) », « Detail », « Apercu »),
    visibles dans la sortie de `demo:check` collée dans DEMO.md.
-3. `strapi import` laisse un fichier `import_<horodatage>.log` à la racine à chaque `demo:reset`
+3. Corrigé (demo:reset les supprime) : `strapi import` laisse un fichier `import_<horodatage>.log` à la racine à chaque `demo:reset`
    (12 fichiers constatés, ignorés par git) : `demo-reset.ts` pourrait les supprimer ou les ranger dans `logs/`.
-4. `logs/crons.log` n'est jamais vidé par `demo:reset` : le fichier grossit d'une répétition à l'autre
+4. Corrigé (demo:reset le supprime) : `logs/crons.log` n'était jamais vidé par `demo:reset` : le fichier grossit d'une répétition à l'autre
    (sans effet sur la démo, T3 n'affiche que la fin).
 5. Le tableau de bord du plugin compte aussi les brouillons MCP créés par `mcp-curl.sh` et par l'agent
    (« Brouillon créé en JSON-RPC » à 0/6) : sans effet si on reset entre deux répétitions.

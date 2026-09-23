@@ -85,9 +85,9 @@ Vérification de la démo (Strapi : http://localhost:1337, front : http://localh
   [OK] Aucun brouillon en retard : tout article dont publishAt est passé est publié
 == FRONT
   [OK] Front http://localhost:3000/ : HTTP 200
-  [OK] Liste fr : 7 titre(s) publie(s) affiche(s)
-  [OK] Detail /articles/pourquoi-un-cms-headless : HTTP 200
-  [OK] Apercu du brouillon brouillon-plugin-maison : sans apercu HTTP 404, /api/preview HTTP 307 + cookie, avec apercu HTTP 200 + bandeau, mauvais secret HTTP 401
+  [OK] Liste fr : 7 titre(s) publié(s) affiché(s)
+  [OK] Détail /articles/pourquoi-un-cms-headless : HTTP 200
+  [OK] Aperçu du brouillon brouillon-plugin-maison : sans aperçu HTTP 404, /api/preview HTTP 307 + cookie, avec aperçu HTTP 200 + bandeau, mauvais secret HTTP 401
 == MCP
   [OK] MCP actif : POST /mcp sans token répond 401 (Authentication required)
   [OK] MCP : token Content API (STRAPI_READ_TOKEN) rejeté par /mcp (HTTP 401, 401 attendu)

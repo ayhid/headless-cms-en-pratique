@@ -245,7 +245,7 @@ Passe faite dans le dépôt principal, Strapi 1337 et Next 3000. Historique lin�
 `time npm run demo:reset` (mode import, build du plugin compris) :
 
 ```
-[reset] Base et uploads supprimés (0.0 s)
+[reset] Base, uploads et logs supprimés (0.0 s)
 [reset] Restauration de data/demo-export.tar via strapi import...
 [reset] Terminé en 2.2 s (mode : import). Lancer ensuite : npm run demo:start
 npm run demo:reset  9.32s user 0.78s system 205% cpu 4.927 total
@@ -279,9 +279,9 @@ Vérification de la démo (Strapi : http://localhost:1337, front : http://localh
   [OK] Aucun brouillon en retard : tout article dont publishAt est passé est publié
 == FRONT
   [OK] Front http://localhost:3000/ : HTTP 200
-  [OK] Liste fr : 7 titre(s) publie(s) affiche(s)
-  [OK] Detail /articles/pourquoi-un-cms-headless : HTTP 200
-  [OK] Apercu du brouillon brouillon-plugin-maison : sans apercu HTTP 404, /api/preview HTTP 307 + cookie, avec apercu HTTP 200 + bandeau, mauvais secret HTTP 401
+  [OK] Liste fr : 7 titre(s) publié(s) affiché(s)
+  [OK] Détail /articles/pourquoi-un-cms-headless : HTTP 200
+  [OK] Aperçu du brouillon brouillon-plugin-maison : sans aperçu HTTP 404, /api/preview HTTP 307 + cookie, avec aperçu HTTP 200 + bandeau, mauvais secret HTTP 401
 == MCP
   [OK] MCP actif : POST /mcp sans token répond 401 (Authentication required)
   [OK] MCP : token Content API (STRAPI_READ_TOKEN) rejeté par /mcp (HTTP 401, 401 attendu)
@@ -329,8 +329,8 @@ La base a été remise à zéro après ces tests (`npm run demo:reset`), les por
 
 ### Écarts et points connus
 
-- `scripts/checks/front.ts` (FRONT) affiche encore « publie(s) affiche(s) », « Detail », « Apercu » sans
-  accents : fichier d'un autre agent, non bloquant, je n'y ai pas touché.
+- Corrigé après intégration : `scripts/checks/front.ts` est accentué, et `demo:reset` supprime
+  `logs/crons.log` et les fichiers `import_*.log` laissés par `strapi import`.
 - L'autrice « Ines Carvalho » garde son nom sans accent : `scripts/seed/contenu.ts` la retrouve par ce nom.
 - Les handoffs des autres agents citent les anciens titres non accentués dans leurs sorties historiques.
 - Le login admin (5 par 5 min) est partagé entre le navigateur du présentateur, `schedule-demo-article.ts`

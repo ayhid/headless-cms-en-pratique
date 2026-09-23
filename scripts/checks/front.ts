@@ -1,7 +1,7 @@
 // Controles de l'agent FRONT (front Next.js lance : npm run demo:start, ou next start).
 // - la page d'accueil repond 200 et affiche les titres des articles fr publies (lus dans Strapi) ;
 // - une page de detail repond 200 ;
-// - /api/preview active le Draft Mode et le brouillon s'affiche avec le bandeau ; sans apercu : 404.
+// - /api/preview active le Draft Mode et le brouillon s'affiche avec le bandeau ; sans aperçu : 404.
 import type { CheckFn, CheckResult } from './types';
 
 const DRAFT_SLUG = 'brouillon-plugin-maison';
@@ -41,7 +41,7 @@ const check: CheckFn = async (ctx) => {
     ok: published.length >= 5 && missing.length === 0,
     message:
       missing.length === 0
-        ? `Liste fr : ${published.length} titre(s) publie(s) affiche(s)`
+        ? `Liste fr : ${published.length} titre(s) publié(s) affiché(s)`
         : `Liste fr : titre(s) absent(s) : ${missing.map((a) => a.title).join(', ')}`,
   });
 
@@ -50,7 +50,7 @@ const check: CheckFn = async (ctx) => {
     const detail = await getPage(`${front}/articles/${published[0].slug}`);
     results.push({
       ok: detail.status === 200 && detail.html.includes(published[0].title),
-      message: `Detail /articles/${published[0].slug} : HTTP ${detail.status}`,
+      message: `Détail /articles/${published[0].slug} : HTTP ${detail.status}`,
     });
   }
 
@@ -72,9 +72,9 @@ const check: CheckFn = async (ctx) => {
     badSecret.status === 401;
   results.push({
     ok,
-    message: `Apercu du brouillon ${DRAFT_SLUG} : sans apercu HTTP ${withoutPreview.status}, /api/preview HTTP ${enter.status}${
+    message: `Aperçu du brouillon ${DRAFT_SLUG} : sans aperçu HTTP ${withoutPreview.status}, /api/preview HTTP ${enter.status}${
       cookie ? ' + cookie' : ' sans cookie'
-    }, avec apercu HTTP ${draft?.status ?? '-'}${draft?.html.includes('Mode aperçu : brouillon') ? ' + bandeau' : ''}, mauvais secret HTTP ${badSecret.status}`,
+    }, avec aperçu HTTP ${draft?.status ?? '-'}${draft?.html.includes('Mode aperçu : brouillon') ? ' + bandeau' : ''}, mauvais secret HTTP ${badSecret.status}`,
   });
 
   return results;

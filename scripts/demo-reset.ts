@@ -30,7 +30,10 @@ async function main() {
   const uploads = join(ROOT, 'public', 'uploads');
   mkdirSync(uploads, { recursive: true });
   for (const f of readdirSync(uploads)) if (f !== '.gitkeep') rmSync(join(uploads, f), { recursive: true, force: true });
-  console.log(`[reset] Base et uploads supprimés (${elapsed()})`);
+  // Logs d'une répétition précédente : récapitulatif des crons et journaux laissés par `strapi import`.
+  rmSync(join(ROOT, 'logs', 'crons.log'), { force: true });
+  removeImportLogs();
+  console.log(`[reset] Base, uploads et logs supprimés (${elapsed()})`);
 
   const archive = join(ROOT, 'data', 'demo-export.tar');
   let mode = 'import';
@@ -57,7 +60,13 @@ async function main() {
     }
   }
 
+  removeImportLogs();
   console.log(`[reset] Terminé en ${elapsed()} (mode : ${mode}). Lancer ensuite : npm run demo:start`);
 }
 
 main();
+
+// `strapi import` écrit un fichier import_<date>.log à la racine à chaque restauration.
+function removeImportLogs() {
+  for (const f of readdirSync(ROOT)) if (/^import_.*\.log$/.test(f)) rmSync(join(ROOT, f), { force: true });
+}
